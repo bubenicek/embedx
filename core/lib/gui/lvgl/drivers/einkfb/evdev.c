@@ -72,6 +72,8 @@ int evdev_set_calibration(int x1, int x2, int y1, int y2, int offset)
 
     if (x1 != 0 && x2 != 0 && y1 != 0 && y2 != 0)
     {
+        app_config.gui.touchpad.calibration.enabled = true;
+
         TRACE("Set calibration  x1:%d  x2:%d  y1:%d  y2:%d  offset: %d", x1, x2, y1, y2, offset);
 
         if (config_save() != 0)
