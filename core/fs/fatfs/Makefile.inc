@@ -1,0 +1,6 @@
+
+PROJECT_DIRS += $(EMBEDX_ROOT)/core/fs/fatfs
+
+PROJECT_SOURCEFILES += ff.c
+PROJECT_SOURCEFILES += ff_time.c
+PROJECT_SOURCEFILES += spiffs_diskio.c

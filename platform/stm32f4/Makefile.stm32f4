@@ -1,0 +1,52 @@
+
+### DFS configuration
+#
+#   Flash memory:
+#   +------------+------------+--------------------
+#   |            |            |                    |
+#   | Sector 0   |  0x800000  |  Bootloader  64KB  |
+#   |            |            |                    |
+#   |------------+---------------------------------|
+#   |            |            |                    |
+#   | Sector 1   |  0x810000  |  Application 960KB |
+#   |            |            |                    |
+#   +------------+------------+--------------------+
+#
+CFG_BOOTLOADER_START_ADDR=0x800000
+CFG_BOOTLOADER_SIZE=0x10000
+
+CFG_APP_HEADER_OFFSET=0x200
+
+CFG_DFS_ACTIVE_START_ADDR=0x08010000
+CFG_DFS_ACTIVE_SIZE=0xF0000
+
+CFLAGS += -DCFG_BOOTLOADER_START_ADDR
+CFLAGS += -DCFG_BOOTLOADER_SIZE=$(CFG_BOOTLOADER_SIZE)
+CFLAGS += -DCFG_APP_HEADER_OFFSET=$(CFG_APP_HEADER_OFFSET)
+CFLAGS += -DCFG_DFS_ACTIVE_START_ADDR=$(CFG_DFS_ACTIVE_START_ADDR)
+CFLAGS += -DCFG_DFS_ACTIVE_SIZE=$(CFG_DFS_ACTIVE_SIZE)
+
+PROJECT_TARGET_DIRS = . ../../cpu/stm32f4/lwip ../../cpu/stm32f4/lwip/FreeRTOS
+PROJECT_SOURCEFILES += board.c
+PROJECT_SOURCEFILES += ethernetif.c
+PROJECT_SOURCEFILES += sys_arch.c
+
+CFLAGS += -DCFG_USE_LWIP
+
+## CPU
+CPU = STM32F469
+CFLAGS += -DHSE_VALUE=8000000
+include ../../cpu/stm32f4/Makefile.inc
+
+## LWIP
+include ../../core/net/lwip/Makefile.inc
+
+### RTOS
+include ../../core/sys/rtos/freertos/Makefile.inc
+include ../../core/sys/rtos/cmsis/freertos/Makefile.inc
+
+### Common modules
+MODULES += core/sys core/sys/posix core/lib
+#MODULES += core/lib/bootloader
+
+

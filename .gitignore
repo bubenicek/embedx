@@ -1,0 +1,10 @@
+*.o
+*.depend
+*.layout
+*.bin
+*.hex
+*.elf
+*.map
+*.obj
+*.d
+*.lst

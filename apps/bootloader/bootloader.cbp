@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="ZW Bootloader" />
+		<Option makefile_is_custom="1" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="zwap">
+				<Option output="bin/Release/test" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+				<MakeCommands>
+					<Build command="$make -f $makefile TARGET=$target" />
+					<CompileFile command="$make -f $makefile $file" />
+					<Clean command="$make -f $makefile TARGET=$target clean" />
+					<DistClean command="$make -f $makefile distclean$target" />
+					<AskRebuildNeeded command="$make -q -f $makefile $target" />
+					<SilentBuild command="$make -f $makefile TARGET=$target &gt; $(CMD_NULL)" />
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+		</Compiler>
+		<Unit filename="../../core/dev/mem/S25FL127.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../core/dev/mem/S25FL127.h" />
+		<Unit filename="../../core/dev/mem/m25pe10.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../core/dev/mem/m25pe10.h" />
+		<Unit filename="../../core/dev/mem/m95256.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../core/dev/mem/m95256.h" />
+		<Unit filename="../../core/fs/uffs/inc/uffs/uffs.h" />
+		<Unit filename="../../core/fs/uffs/inc/uffs/uffs_badblock.h" />
+		<Unit filename="../../core/fs/uffs/inc/uffs/uffs_blockinfo.h" />
+		<Unit filename="../../core/fs/uffs/inc/uffs/uffs_buf.h" />
+		<Unit filename="../../core/fs/uffs/inc/uffs/uffs_core.h" />
+		<Unit filename="../../core/fs/uffs/inc/uffs/uffs_crc.h" />
+		<Unit filename="../../core/fs/uffs/inc/uffs/uffs_device.h" />
+		<Unit filename="../../core/fs/uffs/inc/uffs/uffs_ecc.h" />
+		<Unit filename="../../core/fs/uffs/inc/uffs/uffs_fd.h" />
+		<Unit filename="../../core/fs/uffs/inc/uffs/uffs_find.h" />
+		<Unit filename="../../core/fs/uffs/inc/uffs/uffs_flash.h" />
+		<Unit filename="../../core/fs/uffs/inc/uffs/uffs_fs.h" />
+		<Unit filename="../../core/fs/uffs/inc/uffs/uffs_mem.h" />
+		<Unit filename="../../core/fs/uffs/inc/uffs/uffs_mtb.h" />
+		<Unit filename="../../core/fs/uffs/inc/uffs/uffs_os.h" />
+		<Unit filename="../../core/fs/uffs/inc/uffs/uffs_pool.h" />
+		<Unit filename="../../core/fs/uffs/inc/uffs/uffs_posix.h" />
+		<Unit filename="../../core/fs/uffs/inc/uffs/uffs_public.h" />
+		<Unit filename="../../core/fs/uffs/inc/uffs/uffs_tree.h" />
+		<Unit filename="../../core/fs/uffs/inc/uffs/uffs_types.h" />
+		<Unit filename="../../core/fs/uffs/inc/uffs/uffs_utils.h" />
+		<Unit filename="../../core/fs/uffs/inc/uffs/uffs_version.h" />
+		<Unit filename="../../core/fs/uffs/interface/spi/uffs_spi_drv.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../core/fs/uffs/interface/uffs_interface.h" />
+		<Unit filename="../../core/fs/uffs/platform/standalone/uffs_config.h" />
+		<Unit filename="../../core/fs/uffs/platform/standalone/uffs_os.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../core/fs/uffs/src/uffs_badblock.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../core/fs/uffs/src/uffs_blockinfo.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../core/fs/uffs/src/uffs_buf.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../core/fs/uffs/src/uffs_crc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../core/fs/uffs/src/uffs_debug.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../core/fs/uffs/src/uffs_device.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../core/fs/uffs/src/uffs_ecc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../core/fs/uffs/src/uffs_fd.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../core/fs/uffs/src/uffs_find.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../core/fs/uffs/src/uffs_flash.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../core/fs/uffs/src/uffs_fs.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../core/fs/uffs/src/uffs_init.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../core/fs/uffs/src/uffs_mem.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../core/fs/uffs/src/uffs_mtb.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../core/fs/uffs/src/uffs_pool.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../core/fs/uffs/src/uffs_public.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../core/fs/uffs/src/uffs_tree.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../core/fs/uffs/src/uffs_utils.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../core/fs/uffs/src/uffs_version.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../core/lib/bootloader/app_header.h" />
+		<Unit filename="../../core/lib/bootloader/dfs.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../core/lib/bootloader/dfs.h" />
+		<Unit filename="../../core/lib/bootloader/dfs_uffs.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../core/lib/crc32.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../core/lib/crc32.h" />
+		<Unit filename="../../core/lib/sprintf.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../core/lib/sprintf.h" />
+		<Unit filename="../../core/sys/debug.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../core/sys/debug.h" />
+		<Unit filename="../../core/sys/fslog.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../core/sys/fslog.h" />
+		<Unit filename="../../core/sys/system.h" />
+		<Unit filename="../../core/sys/trace.h" />
+		<Unit filename="../../cpu/stm32f4/Makefile.inc" />
+		<Unit filename="../../cpu/stm32f4/cmsis/include/arm_common_tables.h" />
+		<Unit filename="../../cpu/stm32f4/cmsis/include/arm_math.h" />
+		<Unit filename="../../cpu/stm32f4/cmsis/include/core_cm4.h" />
+		<Unit filename="../../cpu/stm32f4/cmsis/include/core_cm4_simd.h" />
+		<Unit filename="../../cpu/stm32f4/cmsis/include/core_cmFunc.h" />
+		<Unit filename="../../cpu/stm32f4/cmsis/include/core_cmInstr.h" />
+		<Unit filename="../../cpu/stm32f4/compiler.h" />
+		<Unit filename="../../cpu/stm32f4/drivers/include/misc.h" />
+		<Unit filename="../../cpu/stm32f4/drivers/include/stm32f4x7_eth.h" />
+		<Unit filename="../../cpu/stm32f4/drivers/include/stm32f4x7_eth_bsp.h" />
+		<Unit filename="../../cpu/stm32f4/drivers/include/stm32f4x7_eth_conf_template.h" />
+		<Unit filename="../../cpu/stm32f4/drivers/include/stm32f4xx_adc.h" />
+		<Unit filename="../../cpu/stm32f4/drivers/include/stm32f4xx_can.h" />
+		<Unit filename="../../cpu/stm32f4/drivers/include/stm32f4xx_crc.h" />
+		<Unit filename="../../cpu/stm32f4/drivers/include/stm32f4xx_cryp.h" />
+		<Unit filename="../../cpu/stm32f4/drivers/include/stm32f4xx_dac.h" />
+		<Unit filename="../../cpu/stm32f4/drivers/include/stm32f4xx_dbgmcu.h" />
+		<Unit filename="../../cpu/stm32f4/drivers/include/stm32f4xx_dcmi.h" />
+		<Unit filename="../../cpu/stm32f4/drivers/include/stm32f4xx_dma.h" />
+		<Unit filename="../../cpu/stm32f4/drivers/include/stm32f4xx_exti.h" />
+		<Unit filename="../../cpu/stm32f4/drivers/include/stm32f4xx_flash.h" />
+		<Unit filename="../../cpu/stm32f4/drivers/include/stm32f4xx_fsmc.h" />
+		<Unit filename="../../cpu/stm32f4/drivers/include/stm32f4xx_gpio.h" />
+		<Unit filename="../../cpu/stm32f4/drivers/include/stm32f4xx_hash.h" />
+		<Unit filename="../../cpu/stm32f4/drivers/include/stm32f4xx_i2c.h" />
+		<Unit filename="../../cpu/stm32f4/drivers/include/stm32f4xx_iwdg.h" />
+		<Unit filename="../../cpu/stm32f4/drivers/include/stm32f4xx_pwr.h" />
+		<Unit filename="../../cpu/stm32f4/drivers/include/stm32f4xx_rcc.h" />
+		<Unit filename="../../cpu/stm32f4/drivers/include/stm32f4xx_rng.h" />
+		<Unit filename="../../cpu/stm32f4/drivers/include/stm32f4xx_rtc.h" />
+		<Unit filename="../../cpu/stm32f4/drivers/include/stm32f4xx_sdio.h" />
+		<Unit filename="../../cpu/stm32f4/drivers/include/stm32f4xx_spi.h" />
+		<Unit filename="../../cpu/stm32f4/drivers/include/stm32f4xx_syscfg.h" />
+		<Unit filename="../../cpu/stm32f4/drivers/include/stm32f4xx_tim.h" />
+		<Unit filename="../../cpu/stm32f4/drivers/include/stm32f4xx_usart.h" />
+		<Unit filename="../../cpu/stm32f4/drivers/include/stm32f4xx_wwdg.h" />
+		<Unit filename="../../cpu/stm32f4/drivers/src/misc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../cpu/stm32f4/drivers/src/stm32f4x7_eth.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../cpu/stm32f4/drivers/src/stm32f4x7_eth_bsp.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../cpu/stm32f4/drivers/src/stm32f4xx_exti.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../cpu/stm32f4/drivers/src/stm32f4xx_flash.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../cpu/stm32f4/drivers/src/stm32f4xx_gpio.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../cpu/stm32f4/drivers/src/stm32f4xx_iwdg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../cpu/stm32f4/drivers/src/stm32f4xx_pwr.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../cpu/stm32f4/drivers/src/stm32f4xx_rcc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../cpu/stm32f4/drivers/src/stm32f4xx_rng.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../cpu/stm32f4/drivers/src/stm32f4xx_rtc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../cpu/stm32f4/drivers/src/stm32f4xx_spi.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../cpu/stm32f4/drivers/src/stm32f4xx_syscfg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../cpu/stm32f4/drivers/src/stm32f4xx_tim.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../cpu/stm32f4/drivers/src/stm32f4xx_usart.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../cpu/stm32f4/drivers/src/stm32f4xx_wwdg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../cpu/stm32f4/linker_scripts/stm32f4xx_flash.ld" />
+		<Unit filename="../../cpu/stm32f4/startup_stm32f407xx.S" />
+		<Unit filename="../../cpu/stm32f4/stm32f4xx.h" />
+		<Unit filename="../../cpu/stm32f4/system_stm32f4xx.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../cpu/stm32f4/system_stm32f4xx.h" />
+		<Unit filename="../../platform/board.h" />
+		<Unit filename="../../platform/hal_console.h" />
+		<Unit filename="../../platform/hal_flash.h" />
+		<Unit filename="../../platform/hal_gpio.h" />
+		<Unit filename="../../platform/hal_led.h" />
+		<Unit filename="../../platform/hal_pm.h" />
+		<Unit filename="../../platform/hal_rand.h" />
+		<Unit filename="../../platform/hal_rtc.h" />
+		<Unit filename="../../platform/hal_spi.h" />
+		<Unit filename="../../platform/hal_time.h" />
+		<Unit filename="../../platform/hal_uart.h" />
+		<Unit filename="../../platform/hal_uuid.h" />
+		<Unit filename="../../platform/hal_wdg.h" />
+		<Unit filename="../../platform/zwap/Makefile.zwap" />
+		<Unit filename="../../platform/zwap/hal_console.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../platform/zwap/hal_flash.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../platform/zwap/hal_gpio.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../platform/zwap/hal_pm.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../platform/zwap/hal_rand.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../platform/zwap/hal_rtc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../platform/zwap/hal_spi.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../platform/zwap/hal_time.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../platform/zwap/hal_uart.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../platform/zwap/hal_uuid.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../platform/zwap/hal_wdg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../platform/zwap/lwip/FreeRTOS/ethernetif.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../platform/zwap/lwip/FreeRTOS/sys_arch.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../platform/zwap/stm32f4xx_conf.h" />
+		<Unit filename="../../platform/zwap/zwap_board.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../platform/zwap/zwap_board.h" />
+		<Unit filename="Makefile" />
+		<Unit filename="src/cfg/config.h" />
+		<Unit filename="src/main.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Extensions>
+			<envvars />
+			<code_completion />
+			<lib_finder disable_auto="1" />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

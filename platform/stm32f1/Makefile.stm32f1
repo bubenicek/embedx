@@ -1,0 +1,6 @@
+PROJECT_TARGET_DIRS = . ../../core/sys/rtos 
+
+PROJECT_SOURCEFILES += board.c
+
+## CPU
+include ../../cpu/stm32f1/Makefile.inc

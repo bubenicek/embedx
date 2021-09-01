@@ -1,0 +1,46 @@
+#  ----------------------------------------------------------------
+# |       !!! Don't modify the MakeVars.default file. !!!          |
+# |                                                                |
+# |            Please copy it localy to new filename               |
+# |                         MakeVars.mk                            |
+# |      and set up your local variables in the MakeVars.mk        |
+# | (Please bear in mind the backward compatibility of this file.  |
+# |                     Dont delete anything, just add new things.)|
+#  ----------------------------------------------------------------
+
+# Commonly used executables, manage file, documentation processors
+# ----------------------------------------
+# Copy executable
+#       default = cp
+CP              = cp
+
+# Remove executable
+#       default = rm -f
+RM              = rm -f
+
+# Grep executable
+#       default = grep
+GREP            = grep
+
+# Makedir executable
+#       default = mkdir
+MKDIR           = mkdir
+
+# Curl executable
+#       default = curl
+CURL            = curl
+
+# Doxygen executable
+#       default = "doxygen"
+#DOXYGEN         = "doxygen"
+
+
+# Build tools
+# ----------------------------------------
+# OpenOCD executable
+#       default = "openocd"
+OPENOCD = /opt/openocd-0.10/bin/openocd
+
+# Firmware cross-compiler GCC prefix to STM32 platform
+#       default = "c://LN2_Build_Tools//CodeSourcery//Sourcery_CodeBench_Lite_for_ARM_EABI//bin//arm-none-eabi-"
+CROSS_FW_ARM = 'c:\Program Files (x86)\Atollic\TrueSTUDIO for STM32 9.0.1\ARMTools\bin\arm-atollic-eabi-'

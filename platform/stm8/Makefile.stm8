@@ -1,0 +1,7 @@
+
+PROJECT_TARGET_DIRS = . ../../core/sys/rtos ../../core/dev/mem
+
+PROJECT_SOURCEFILES += board.c
+
+## CPU
+include ../../cpu/stm8/Makefile.inc

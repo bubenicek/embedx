@@ -1,0 +1,24 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "/home/bubenik/projects/embedx/core"
+		},
+		{
+			"path": "/home/bubenik/projects/embedx/cpu"
+		},
+		{
+			"path": "../../platform"
+		}
+	],
+	"settings": {
+		"files.associations": {
+		},
+		"files.exclude": {
+			"**/.vscode": true
+		},
+		"git.ignoreLimitWarning": true
+	}
+}

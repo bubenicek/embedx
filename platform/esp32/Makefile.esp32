@@ -1,0 +1,13 @@
+
+PROJECT_TARGET_DIRS += .
+PROJECT_SOURCEFILES += board.c
+
+CFLAGS += -DCFG_USE_LWIP
+CFLAGS += -DCS_PLATFORM=CS_P_MBED
+
+## CPU
+include $(EMBEDX_ROOT)/cpu/esp32/Makefile.inc
+
+### RTOS 
+include $(EMBEDX_ROOT)/core/sys/rtos/cmsis/freertos/Makefile.inc
+

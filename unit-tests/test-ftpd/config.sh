@@ -1,0 +1,8 @@
+IP=192.168.200.12
+USER=admin
+PASSWD=1234
+
+URL="ftp://$USER:$PASSWD@$IP"
+
+CURL_OPTIONS=-v 
+

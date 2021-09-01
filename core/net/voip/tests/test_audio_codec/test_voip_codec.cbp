@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="test_voip_codec" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Release">
+				<Option output="bin/Release/test_voip_codec" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add library="m" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+		</Compiler>
+		<Unit filename="main.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="voip_codec/codec2/codec2/_kiss_fft_guts.h" />
+		<Unit filename="voip_codec/codec2/codec2/ampexp.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="voip_codec/codec2/codec2/ampexp.h" />
+		<Unit filename="voip_codec/codec2/codec2/codebook.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="voip_codec/codec2/codec2/codebookd.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="voip_codec/codec2/codec2/codebookdt.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="voip_codec/codec2/codec2/codebookge.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="voip_codec/codec2/codec2/codebookjnd.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="voip_codec/codec2/codec2/codebookjvm.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="voip_codec/codec2/codec2/codebookres.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="voip_codec/codec2/codec2/codebookvq.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="voip_codec/codec2/codec2/codebookvqanssi.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="voip_codec/codec2/codec2/codec2.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="voip_codec/codec2/codec2/codec2.h" />
+		<Unit filename="voip_codec/codec2/codec2/codec2_fdmdv.h" />
+		<Unit filename="voip_codec/codec2/codec2/codec2_fifo.h" />
+		<Unit filename="voip_codec/codec2/codec2/codec2_internal.h" />
+		<Unit filename="voip_codec/codec2/codec2/comp.h" />
+		<Unit filename="voip_codec/codec2/codec2/defines.h" />
+		<Unit filename="voip_codec/codec2/codec2/fifo.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="voip_codec/codec2/codec2/golay23.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="voip_codec/codec2/codec2/golay23.h" />
+		<Unit filename="voip_codec/codec2/codec2/hanning.h" />
+		<Unit filename="voip_codec/codec2/codec2/interp.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="voip_codec/codec2/codec2/interp.h" />
+		<Unit filename="voip_codec/codec2/codec2/kiss_fft.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="voip_codec/codec2/codec2/kiss_fft.h" />
+		<Unit filename="voip_codec/codec2/codec2/lpc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="voip_codec/codec2/codec2/lpc.h" />
+		<Unit filename="voip_codec/codec2/codec2/lsp.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="voip_codec/codec2/codec2/lsp.h" />
+		<Unit filename="voip_codec/codec2/codec2/machdep.h" />
+		<Unit filename="voip_codec/codec2/codec2/nlp.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="voip_codec/codec2/codec2/nlp.h" />
+		<Unit filename="voip_codec/codec2/codec2/octave.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="voip_codec/codec2/codec2/octave.h" />
+		<Unit filename="voip_codec/codec2/codec2/os.h" />
+		<Unit filename="voip_codec/codec2/codec2/pack.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="voip_codec/codec2/codec2/phase.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="voip_codec/codec2/codec2/phase.h" />
+		<Unit filename="voip_codec/codec2/codec2/phaseexp.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="voip_codec/codec2/codec2/phaseexp.h" />
+		<Unit filename="voip_codec/codec2/codec2/pilot_coeff.h" />
+		<Unit filename="voip_codec/codec2/codec2/postfilter.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="voip_codec/codec2/codec2/postfilter.h" />
+		<Unit filename="voip_codec/codec2/codec2/quantise.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="voip_codec/codec2/codec2/quantise.h" />
+		<Unit filename="voip_codec/codec2/codec2/rn.h" />
+		<Unit filename="voip_codec/codec2/codec2/sine.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="voip_codec/codec2/codec2/sine.h" />
+		<Unit filename="voip_codec/codec2/codec2/test_bits.h" />
+		<Unit filename="voip_codec/codec2/voip_codec_codec2.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="voip_codec/g711/alaw.h" />
+		<Unit filename="voip_codec/g711/voip_codec_g711.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="voip_codec/voip_codec.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="voip_codec/voip_codec.h" />
+		<Extensions>
+			<envvars />
+			<code_completion />
+			<lib_finder disable_auto="1" />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

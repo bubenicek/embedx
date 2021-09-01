@@ -1,2 +1,3 @@
-# embedx
-EMBEDX  build system
+EMBEDX core build system
+
+

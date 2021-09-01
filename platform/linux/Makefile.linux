@@ -1,0 +1,11 @@
+PROJECT_TARGET_DIRS += .
+PROJECT_SOURCEFILES += board.c
+
+## CPU
+CPU=x86
+include ../../cpu/linux/Makefile.inc
+
+### RTOS
+include ../../core/sys/rtos/cmsis/linux/Makefile.inc
+
+
