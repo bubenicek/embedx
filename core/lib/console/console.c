@@ -7,6 +7,8 @@
 #include "system.h"
 #include "console.h"
 
+TRACE_TAG(console);
+
 #define KEY_ENTER       13
 #define KEY_ESC         27
 #define KEY_SPACE       32
@@ -26,7 +28,9 @@ int console_init(console_t *s)
     memset(s, 0, sizeof(console_t));
 
     // Intialize console input/output
-    console_driver_init(s);
+    if (console_driver_init(s) != 0)
+        return -1;
+        
     s->state = CONSOLE_STATE_INIT;
 
 #if defined(CFG_OPENOS_OS_API) && (CFG_OPENOS_OS_API == 1)
@@ -46,9 +50,10 @@ void console_task(console_t *s)
          // Initialize reading of line
         case CONSOLE_STATE_INIT:            
         
+#if defined (CFG_CONSOLE_USE_PROMPT) && (CFG_CONSOLE_USE_PROMPT == 1)        
             // Send prompt
             console_printf(s, CFG_CONSOLE_PROMPT);
-        
+#endif                    
             s->bufin_index = 0;
             s->params.argc = 0;
             s->params.argv[0] = (char *)s->bufin;
@@ -77,7 +82,7 @@ void console_task(console_t *s)
                     *s->bufin = 0;
                     s->state = CONSOLE_STATE_PROCESS_CMD;
                 }
-                else if (c == KEY_ENTER)
+                else if (c == KEY_ENTER || c == '\n')
                 {
                     // confirm command
                     if (++s->params.argc > CFG_CONSOLE_MAX_ARGC)
@@ -160,7 +165,10 @@ void console_task(console_t *s)
     }
 
 #if defined(CFG_OPENOS_OS_API) && (CFG_OPENOS_OS_API == 1)
-    os_scheduler_push_task((os_task_cbt)console_task, OS_TASKPRIO_MAX, s);
+    if (os_scheduler_push_task((os_task_cbt)console_task, OS_TASKPRIO_MAX, s) != 0)
+    {
+        TRACE_ERROR("os_scheduler_push_task failed");
+    }
 #endif
 }
 

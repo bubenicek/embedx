@@ -17,6 +17,9 @@
 #define CFG_CONSOLE_MAX_ARGC            16
 #endif
 
+#ifndef CFG_CONSOLE_USE_PROMPT
+#define CFG_CONSOLE_USE_PROMPT          1
+#endif
 
 #ifndef CFG_CONSOLE_PROMPT
 #define CFG_CONSOLE_PROMPT             "> "

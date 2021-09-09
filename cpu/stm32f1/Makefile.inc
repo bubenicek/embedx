@@ -153,7 +153,7 @@ else ifeq ($(CPU),STM32F107xC)
  endif
 
 else
-  abort
+   abort
 endif
 
 

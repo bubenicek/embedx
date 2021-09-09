@@ -33,7 +33,7 @@ int evdev_init(void);
  * @param data store the evdev data here
  * @return false: because the points are not buffered, so no more data to be read
  */
-bool evdev_read(lv_indev_drv_t * drv, lv_indev_data_t * data);
+void evdev_read(lv_indev_drv_t * drv, lv_indev_data_t * data);
 
 /** Set calibration */
 int evdev_set_calibration(int x1, int x2, int y1, int y2, int offset);

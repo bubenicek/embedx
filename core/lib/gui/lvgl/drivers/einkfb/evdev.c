@@ -72,8 +72,6 @@ int evdev_set_calibration(int x1, int x2, int y1, int y2, int offset)
 
     if (x1 != 0 && x2 != 0 && y1 != 0 && y2 != 0)
     {
-        app_config.gui.touchpad.calibration.enabled = true;
-
         TRACE("Set calibration  x1:%d  x2:%d  y1:%d  y2:%d  offset: %d", x1, x2, y1, y2, offset);
 
         if (config_save() != 0)
@@ -95,7 +93,7 @@ int evdev_set_calibration(int x1, int x2, int y1, int y2, int offset)
  * @param data store the evdev data here
  * @return false: because the points are not buffered, so no more data to be read
  */
-bool evdev_read(lv_indev_drv_t *drv, lv_indev_data_t *data)
+void evdev_read(lv_indev_drv_t *drv, lv_indev_data_t *data)
 {
     static int prev_x = 0;
     static int prev_y = 0;
@@ -159,7 +157,7 @@ bool evdev_read(lv_indev_drv_t *drv, lv_indev_data_t *data)
                 }
                 evdev_key_val = data->key;
                 evdev_button = data->state;
-                return false;
+                return;
             }
         }
     }
@@ -169,10 +167,10 @@ bool evdev_read(lv_indev_drv_t *drv, lv_indev_data_t *data)
         /* No data retrieved */
         data->key = evdev_key_val;
         data->state = evdev_button;
-        return false;
+        return;
     }
     if (drv->type != LV_INDEV_TYPE_POINTER)
-        return false;    
+        return;    
        
     // Store the collected data
     data->state = evdev_button;
@@ -223,8 +221,6 @@ bool evdev_read(lv_indev_drv_t *drv, lv_indev_data_t *data)
         prev_x = data->point.x;
         prev_y = data->point.y;
     }
-
-    return false;
 }
 
 static int map(int x, int in_min, int in_max, int out_min, int out_max)

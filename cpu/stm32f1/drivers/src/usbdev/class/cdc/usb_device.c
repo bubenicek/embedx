@@ -34,11 +34,15 @@
 
 /* Includes ------------------------------------------------------------------*/
 
+#include "system.h"
+
 #include "usb_device.h"
 #include "usbd_core.h"
 #include "usbd_desc.h"
 #include "usbd_cdc.h"
 #include "usbd_cdc_if.h"
+
+TRACE_TAG(usb_device);
 
 extern PCD_HandleTypeDef hpcd_USB_FS;
 
@@ -46,16 +50,36 @@ extern PCD_HandleTypeDef hpcd_USB_FS;
 USBD_HandleTypeDef hUsbDeviceFS;
 
 /* init function */				        
-void usb_device_init(void)
+int usb_device_init(void)
 {
   /* Init Device Library,Add Supported Class and Start the library*/
-  USBD_Init(&hUsbDeviceFS, &FS_Desc, DEVICE_FS);
+  if (USBD_Init(&hUsbDeviceFS, &FS_Desc, DEVICE_FS) != USBD_OK)
+  {
+      TRACE_ERROR("USBD_Init failed");
+      return -1;
+  }
 
-  USBD_RegisterClass(&hUsbDeviceFS, &USBD_CDC);
+  if (USBD_RegisterClass(&hUsbDeviceFS, &USBD_CDC) != USBD_OK)
+  {
+      TRACE_ERROR("USBD_RegisterClass failed");
+      return -1;
+  }
 
-  USBD_CDC_RegisterInterface(&hUsbDeviceFS, &USBD_Interface_fops_FS);
+  if (USBD_CDC_RegisterInterface(&hUsbDeviceFS, &USBD_Interface_fops_FS) != USBD_OK)
+  {
+      TRACE_ERROR("USBD_CDC_RegisterInterface failed");
+      return -1;
+  }
 
-  USBD_Start(&hUsbDeviceFS);
+  if (USBD_Start(&hUsbDeviceFS) != USBD_OK)
+  {
+      TRACE_ERROR("USBD_Start failed");
+      return -1;
+  }
+
+  TRACE("Init");
+
+  return 0;
 }
 
 /**

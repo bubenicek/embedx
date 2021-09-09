@@ -29,7 +29,7 @@
 #include "system.h"
 #include "usbd_core.h"
 
-#define TRACE_TAG  "usbd-core"
+TRACE_TAG(usbd_core)
 
 /** @addtogroup STM32_USBD_DEVICE_LIBRARY
 * @{

@@ -31,5 +31,5 @@ char *hal_get_board_uuid(char *uuid, int bufsize)
    memcpy(&data[8], &STM32_UUID[2], 4);
    memcpy(&data[12], &STM32_UUID[0], 4);
 
-   return uuid_make(data, UUID_NBYTES, uuid, bufsize);
+   return uuid128_make(data, UUID_NBYTES, uuid, bufsize);
 }

@@ -4,6 +4,8 @@
 
 #include "system.h"
 
+#if defined CFG_CMSIS_OS_API && CFG_CMSIS_OS_API == 1
+
 TRACE_TAG(hal_uart);
 #if !ENABLE_TRACE_HAL
 #undef TRACE
@@ -364,3 +366,5 @@ void USART3_IRQHandler(void)
 {
    USART_IRQ_HANDLER(USART3);
 }
+
+#endif   // CFG_CMSIS_OS_API

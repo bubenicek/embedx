@@ -21,7 +21,7 @@ int os_timer_start(os_timer_t *timer, os_timer_type_t type, uint32_t interval, o
 	timer->start = hal_time_ms();
 	timer->interval = interval;
 	timer->task_cb = task_cb;
-   timer->arg = arg;
+    timer->arg = arg;
 
    // Find exists timer
 	TAILQ_FOREACH(cur, &timers, entry)

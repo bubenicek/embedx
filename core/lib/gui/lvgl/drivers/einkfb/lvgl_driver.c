@@ -31,13 +31,17 @@ static void lvgl_thread(void *arg);
 // Locals:
 static const osThreadDef(LVGL, lvgl_thread, CFG_LVGL_THREAD_PRIORITY, 0, CFG_LVGL_THREAD_STACK_SIZE);
 
-static lv_disp_buf_t disp_buf;
+static bool initialized = false;
+static lv_disp_draw_buf_t disp_buf;
 static lv_disp_drv_t disp_drv;
 static lv_color_t buf1[CFG_LVGL_DISP_BUFSIZE];
 static lv_indev_drv_t indev_drv;
 
 int lvgl_driver_init(void)
 {
+    if (initialized)
+        return 0;
+
     // Initialize video framebuffer
     if (einkfb_init(CFG_EINKFB_DEVNAME) != 0)
     {
@@ -46,12 +50,14 @@ int lvgl_driver_init(void)
     }
 
     // Initialize display buffer
-    lv_disp_buf_init(&disp_buf, buf1, NULL, CFG_LVGL_DISP_BUFSIZE);
+    lv_disp_draw_buf_init(&disp_buf, buf1, NULL, CFG_LVGL_DISP_BUFSIZE);
 
     // Initialize display driver
     lv_disp_drv_init(&disp_drv);
+    disp_drv.hor_res = LV_HOR_RES_MAX;
+    disp_drv.ver_res = LV_VER_RES_MAX;       
     disp_drv.flush_cb = disp_driver_flush;
-    disp_drv.buffer = &disp_buf;
+    disp_drv.draw_buf = &disp_buf;
     lv_disp_drv_register(&disp_drv);
 
     // Initialize touchpad
@@ -72,16 +78,12 @@ int lvgl_driver_init(void)
         return -1;
     }
 
+    initialized = true;
     osDelay(1000);
 
     TRACE("Driver init");
 
     return 0;
-}
-
-uint32_t lvgl_tick_get(void)
-{
-    return hal_time_ms();
 }
 
 static void disp_driver_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_map)
@@ -121,3 +123,4 @@ static void lvgl_thread(void *arg)
         hal_delay_ms(LV_DISP_DEF_REFR_PERIOD);
     }
 }
+

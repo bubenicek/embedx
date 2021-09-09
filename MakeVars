@@ -40,7 +40,9 @@ CURL            = curl
 # ----------------------------------------
 # OpenOCD executable
 #       default = "openocd"
-OPENOCD	        =/opt/openocd-0.10/bin/openocd
+#OPENOCD	        =/opt/openocd-0.10/bin/openocd
+OPENOCD = openocd
+
 
 # Firmware cross-compiler GCC prefix to STM32 platform
 #       default = "c://LN2_Build_Tools//CodeSourcery//Sourcery_CodeBench_Lite_for_ARM_EABI//bin//arm-none-eabi"

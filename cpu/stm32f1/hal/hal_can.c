@@ -4,6 +4,8 @@
 
 #include "system.h"
 
+#if defined CFG_HAL_CAN_DEF
+
 TRACE_TAG(hal_can);
 #if !ENABLE_TRACE_HAL
 #undef TRACE
@@ -227,3 +229,5 @@ void CAN1_RX0_IRQHandler(void)
 {
    CAN_IRQ_HANDLER(CAN1);
 }
+
+#endif   // CFG_HAL_CAN_DEF

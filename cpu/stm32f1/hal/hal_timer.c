@@ -1,5 +1,7 @@
 #include "system.h"
 
+#ifdef CFG_HAL_TIMER_DEF
+
 TRACE_TAG(hal_timer);
 
 #ifndef CFG_HAL_TIMER_PRIORITY
@@ -146,3 +148,5 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
       }
    }
 }
+
+#endif   // CFG_HAL_TIMER_DEF

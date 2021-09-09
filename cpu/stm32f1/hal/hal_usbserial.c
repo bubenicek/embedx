@@ -2,9 +2,10 @@
 #include "system.h"
 
 #if defined (CPU_USB_DEVICE_CDC)
+#include "usb_device.h"
 #include "usbd_cdc_if.h"
 
-#define TRACE_TAG "usbserial"
+TRACE_TAG(usbserial)
 #if !ENABLE_TRACE_HAL
 #undef TRACE
 #define TRACE(...)
@@ -22,11 +23,12 @@ int hal_usbserial_init(hal_usb_t dev)
    HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
 
    // Init USB driver
-   usb_device_init();
-   
-   // Wait some time
-   hal_delay_ms(1000);
-   
+   if (usb_device_init() != 0)
+   {
+       TRACE_ERROR("USB device init failed");
+       return -1;
+   }
+    
    TRACE("USB serial init");
 
    return 0;
@@ -41,7 +43,7 @@ void hal_usbserial_deinit(hal_usb_t dev)
 /** Put char */
 void hal_usbserial_putchar(hal_uart_t uart, uint8_t c)
 {
-   CDC_Transmit(&c, 1);
+    while(CDC_Transmit(&c, 1) == USBD_BUSY);
 }
 
 /** Get char */
@@ -49,18 +51,27 @@ int hal_usbserial_getchar(hal_uart_t uart)
 {
    uint8_t c;
    
-   return (CDC_Receive(&c, 1) > 0) ? c : -1;
+    if (CDC_Receive(&c, 1) > 0) 
+    {
+        //TRACE("RX: [%02X %c]", c, c);
+        return c;
+    }
+    else
+    {
+        return -1;
+    }
 }
 
 /** Write buffer to USB serial port */
 int hal_usbserial_write(hal_usb_t dev, void *buf, uint16_t count)
 {
-   return 0;
+    // TODO:
 }
 
 /** Read buffer from USB serial port*/
 int hal_usbserial_read(hal_usb_t dev, void *buf, uint16_t count, uint16_t timeout)
 {
+    // TODO:
    return 0;
 }
 

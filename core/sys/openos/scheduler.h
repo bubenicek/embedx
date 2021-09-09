@@ -4,7 +4,7 @@
 
 
 #ifndef CFG_OS_MAX_TASKS
-#define CFG_OS_MAX_TASKS				8
+#define CFG_OS_MAX_TASKS				64
 #endif
 
 #ifndef CFG_OS_NUM_PRIORITIES
