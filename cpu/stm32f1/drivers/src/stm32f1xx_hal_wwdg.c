@@ -40,7 +40,7 @@
         (++) max time (mS) = 1000 * (Counter - 0x40) / WWDG clock
     (+) Typical values:
         (++) Counter min (T[5;0] = 0x00) at 36MHz (PCLK1) with zero prescaler:
-             max timeout before reset: approximately 910µs
+             max timeout before reset: approximately 910ï¿½s
         (++) Counter max (T[5;0] = 0x3F) at 36MHz (PCLK1) with prescaler
              dividing by 8:
              max timeout before reset: approximately 58.25ms
@@ -204,7 +204,7 @@ HAL_StatusTypeDef HAL_WWDG_Init(WWDG_HandleTypeDef *hwwdg)
   hwwdg->MspInitCallback(hwwdg);
 #else
   /* Init the low level hardware */
-  HAL_WWDG_MspInit(hwwdg);
+  //HAL_WWDG_MspInit(hwwdg);
 #endif /* USE_HAL_WWDG_REGISTER_CALLBACKS */
 
   /* Set WWDG Counter */
