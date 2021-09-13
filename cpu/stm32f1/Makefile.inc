@@ -24,6 +24,7 @@ PROJECT_SOURCEFILES += stm32f1xx_hal_spi.c
 PROJECT_SOURCEFILES += stm32f1xx_hal_uart.c
 PROJECT_SOURCEFILES += stm32f1xx_hal_adc.c
 PROJECT_SOURCEFILES += stm32f1xx_hal_can.c
+PROJECT_SOURCEFILES += stm32f1xx_hal_wwdg.c
 PROJECT_SOURCEFILES += stm32f1xx_ll_usb.c
 
 # HAL
