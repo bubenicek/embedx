@@ -54,9 +54,7 @@ int lvgl_driver_init(void)
     disp_drv.ver_res = LV_VER_RES_MAX;   
     disp_drv.flush_cb = sdl_monitor_flush;    /*Used when `LV_VDB_SIZE != 0` in lv_conf.h (buffered drawing)*/
     disp_drv.draw_buf = &disp_buf;
-    //disp_drv.disp_fill = monitor_fill;      /*Used when `LV_VDB_SIZE == 0` in lv_conf.h (unbuffered drawing)*/
-    //disp_drv.disp_map = monitor_map;        /*Used when `LV_VDB_SIZE == 0` in lv_conf.h (unbuffered drawing)*/
-    lv_disp_drv_register(&disp_drv);
+    lv_disp_t *disp = lv_disp_drv_register(&disp_drv);
 
     // Add a display
     sdl_monitor_init();
@@ -76,7 +74,6 @@ int lvgl_driver_init(void)
     TRACE("Init, display resolution: %dx%d", LV_HOR_RES_MAX, LV_VER_RES_MAX);
 
     initialized = true;
-    osDelay(1000);
 
     return 0;
 }
