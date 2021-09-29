@@ -29,7 +29,8 @@ OBJCOPY  = $(CROSSCOMPILER_DIR)/bin/xtensa-esp32-elf-objcopy
 STRIP    = $(CROSSCOMPILER_DIR)/bin/xtensa-esp32-elf-strip
 OBJDUMP	 = $(CROSSCOMPILER_DIR)/bin/xtensa-esp32-elf-objdump
 SIZE     = $(CROSSCOMPILER_DIR)/bin/xtensa-esp32-elf-size
-ESPTOOL	= $(PROJECT_CPU)/components/esptool_py/esptool/esptool.py
+#ESPTOOL = $(PROJECT_CPU)/components/esptool_py/esptool/esptool.py
+ESPTOOL	 = esptool.py
 ESPSIZE  = $(PROJECT_CPU)/tools/idf_size.py
 
 PARTITION_FILE = $(PROJECT_CPU)/build/partitions_ota.bin
@@ -162,13 +163,13 @@ LIBS += -nostdlib -u call_user_start_cpu0  -Wl,--gc-sections -Wl,-static -Wl,--s
 
 ### Compilation rules
 load: erase_flash
-	python $(ESPTOOL) --chip esp32 --port /dev/ttyUSB0 --baud 921600 --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_freq 40m --flash_size detect 0x1000 $(PROJECT_CPU)/build/bootloader/bootloader.bin 0x10000 $(PROJECT_TARGET).bin 0x8000 $(PARTITION_FILE)
+	$(ESPTOOL) --chip esp32 --port /dev/ttyUSB0 --baud 921600 --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_freq 40m --flash_size detect 0x1000 $(PROJECT_CPU)/build/bootloader/bootloader.bin 0x10000 $(PROJECT_TARGET).bin 0x8000 $(PARTITION_FILE)
 	terminal0.sh
 
 erase_flash:
-	python $(ESPTOOL) --chip esp32 --port /dev/ttyUSB0 --baud 921600 --before default_reset --after hard_reset erase_flash  
+	$(ESPTOOL) --chip esp32 --port /dev/ttyUSB0 --baud 921600 --before default_reset --after hard_reset erase_flash  
 
 
 makebin:
-	python $(ESPTOOL) --chip esp32 elf2image --flash_mode "dio" --flash_freq "40m" --flash_size "4MB"  -o $(PROJECT_TARGET).bin $(PROJECT_TARGET)
+	$(ESPTOOL) --chip esp32 elf2image --flash_mode "dio" --flash_freq "40m" --flash_size "4MB"  -o $(PROJECT_TARGET).bin $(PROJECT_TARGET)
 	python $(ESPSIZE) $(PROJECT_TARGET).map

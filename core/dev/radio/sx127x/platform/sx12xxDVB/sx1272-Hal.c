@@ -180,9 +180,9 @@ static uint8_t sx1272_read_dio(uint8_t dio)
     else
         state = 0;
 
-    if (reg != 0) {
-        TRACE("RegIrqFlags[0x12] = 0x%X   DIO[%d] = %d", reg, dio, state);
-    }
+    //if (reg != 0) {
+    //    TRACE("RegIrqFlags[0x12] = 0x%X   DIO[%d] = %d", reg, dio, state);
+    //}
 
     return state;
 }

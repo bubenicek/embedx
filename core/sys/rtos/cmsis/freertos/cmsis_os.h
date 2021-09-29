@@ -959,8 +959,14 @@ osStatus osRecursiveMutexWait (osMutexId mutex_id, uint32_t millisec);
 
 /*************************** Heap memory functions ************/
 #define osMemAlloc           pvPortMalloc
-#define osMemRealloc         pvPortRealloc
 #define osMemFree            vPortFree
+
+static inline void *osMemRealloc(void *ptr, size_t size) 
+{
+    osMemFree(ptr);
+    return osMemAlloc(size);
+}
+
 #define osMemGetTotalSize    xPortGetTotalHeapSize
 #define osMemGetFreeSize     xPortGetFreeHeapSize
 #define osMemGetStackHighWatterMark()  (uxTaskGetStackHighWaterMark(NULL) * 4)

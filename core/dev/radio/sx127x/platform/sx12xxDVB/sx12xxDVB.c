@@ -7,6 +7,7 @@ TRACE_TAG(sx12xxdvb);
 #if defined(USE_SX1272_RADIO)
 #include "../../chip/sx1272/sx1272-Hal.h"
 #include "../../sx127x-radio.h"
+#include "sx1272-LoRa.h"
 #endif
 #if defined(USE_SX1276_RADIO)
 #include "../../chip/sx1276/sx1276-Hal.h"
@@ -66,7 +67,7 @@ void sx1272_dvb_test(void)
                 radio->GetRxPacket(buf, &bufsize);
                 if (bufsize > 0)
                 {
-                    TRACE("RF_RX_DONE -> Receive %d bytes", bufsize);
+                    TRACE("RF_RX_DONE -> Receive %d bytes  RSSI: %f", bufsize, SX1272LoRaGetPacketRssi());
                     TRACE_DUMP(buf, bufsize);
                 }
             }
