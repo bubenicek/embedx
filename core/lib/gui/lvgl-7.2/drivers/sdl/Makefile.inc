@@ -1,7 +1,7 @@
 
-PROJECT_DIRS += $(EMBEDX_ROOT)/core/lib/gui/lvgl/drivers/sdl
-PROJECT_DIRS += $(EMBEDX_ROOT)/core/lib/gui/lvgl/drivers/sdl/display
-PROJECT_DIRS += $(EMBEDX_ROOT)/core/lib/gui/lvgl/drivers/sdl/indev
+PROJECT_DIRS += $(EMBEDX_ROOT)/core/lib/gui/lvgl-7.2/drivers/sdl
+PROJECT_DIRS += $(EMBEDX_ROOT)/core/lib/gui/lvgl-7.2/drivers/sdl/display
+PROJECT_DIRS += $(EMBEDX_ROOT)/core/lib/gui/lvgl-7.2/drivers/sdl/indev
 
 PROJECT_SOURCEFILES += lvgl_driver.c
 PROJECT_SOURCEFILES += sdl_monitor.c

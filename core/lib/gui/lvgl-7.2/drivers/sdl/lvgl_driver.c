@@ -69,6 +69,7 @@ int lvgl_driver_init(void)
      * You have to call 'lv_tick_inc()' in periodically to inform LittelvGL about how much time were elapsed
      * Create an SDL thread to do this*/
     SDL_CreateThread(tick_thread, "tick", NULL);
+    osDelay(250);
 
     TRACE("Init, display resolution: %dx%d", LV_HOR_RES_MAX, LV_VER_RES_MAX);
 

@@ -9,7 +9,7 @@
 /*********************
  *      INCLUDES
  *********************/
-#include "lvgl/lvgl.h"
+#include "lvgl.h"
 
 #ifndef MONITOR_SDL_INCLUDE_PATH
 #define MONITOR_SDL_INCLUDE_PATH <SDL2/SDL.h>
