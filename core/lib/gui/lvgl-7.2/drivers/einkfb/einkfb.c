@@ -10,7 +10,7 @@
 #include <linux/fb.h>
 #include <errno.h>
 
-#include "lvgl/lvgl.h"
+#include "lvgl.h"
 #include "einkfb.h"
 
 TRACE_TAG(einkfb);

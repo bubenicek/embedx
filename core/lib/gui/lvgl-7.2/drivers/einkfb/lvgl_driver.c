@@ -5,7 +5,7 @@
 
 #include "system.h"
 
-#include "lvgl/lvgl.h"
+#include "lvgl.h"
 #include "lvgl_driver.h"
 #include "lv_theme_mono.h"
 
@@ -93,7 +93,7 @@ static void disp_driver_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_colo
 
     // Send area to display without immediate refresh
     einkfb_write(LV_DISPLAY_ORIENTATION, area->x1, area->y1, width, height, (uint8_t *)color_map, size);
-    TRACE("DISP write  x:%d  y:%d  w:%d  h:%d  size: %d  %d ms", area->x1, area->y1, width, height, size, (int)(hal_time_ms() - start_tm));
+    //TRACE("DISP write  x:%d  y:%d  w:%d  h:%d  size: %d  %d ms", area->x1, area->y1, width, height, size, (int)(hal_time_ms() - start_tm));
 
     if (lv_disp_flush_is_last(drv))
         einkfb_update();

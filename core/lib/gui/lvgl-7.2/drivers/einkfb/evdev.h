@@ -6,7 +6,7 @@
 #ifndef EVDEV_H
 #define EVDEV_H
 
-#include "lvgl/lvgl.h"
+#include "lvgl.h"
 
 
 #ifndef EVDEV_HOR_RES  
