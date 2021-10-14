@@ -29,13 +29,11 @@
 #include "low_power.h"
 #endif
 
-#if DEBUG
-#define PRINTF(...) printf(__VA_ARGS__)
-#else
-#define PRINTF(...)
+TRACE_TAG(hci);
+#if !ENABLE_TRACE_BLE_HCI
+#include "trace_undef.h"
 #endif
 
-TRACE_TAG(hci);
 
 #define HCI_READ_PACKET_NUM_MAX (5)
 
@@ -183,8 +181,8 @@ static int HCI_read_packet(uint8_t *buf, int bufsize)
     int res;
     int datalen;
 
-    // Read header
-    res = HAL_Read_Serial(buf, 3, 1000);
+    // Read HCI packet header
+    res = HAL_Read_Serial(buf, 3, 10);
     if (res != 3)
     {
         return res == -2 ? 0 : -1;
@@ -264,7 +262,6 @@ void HCI_Isr(void)
 
 void hci_write(const void *data1, const void *data2, uint8_t n_bytes1, uint8_t n_bytes2)
 {
-#ifdef HCI_LOG_ON
     TRACE_PRINTFF("HCI TX (%02d) <- ", n_bytes1 + n_bytes2);
     for (int i = 0; i < n_bytes1; i++) {
         TRACE_PRINTF("%02X ", *((uint8_t *)data1 + i));
@@ -273,7 +270,6 @@ void hci_write(const void *data1, const void *data2, uint8_t n_bytes1, uint8_t n
         TRACE_PRINTF("%02X ", *((uint8_t *)data2 + i));
     }
     TRACE_PRINTF("\n");
-#endif
 
     Hal_Write_Serial(data1, data2, n_bytes1, n_bytes2);
 }

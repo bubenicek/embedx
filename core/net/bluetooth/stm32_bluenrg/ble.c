@@ -14,6 +14,10 @@
 #include "ble.h"
 
 TRACE_TAG(ble);
+#if !ENABLE_TRACE_BLE
+#include "trace_undef.h"
+#endif
+
 
 // Types:
 
@@ -208,7 +212,7 @@ static void bluenrg_thread(void *arg)
     while (1)
     {
         BTLE_StackTick();
-        osDelay(20);
+        osDelay(25);
     }
 }
 
@@ -392,6 +396,26 @@ int ble_write_attribute(int attr_handle, const void *buf, int bufsize)
     return 0;
 }
 
+/** Convert address to string */
+const char *ble_addr2str(ble_addr_t *addr)
+{
+    static char str[20];
+    int pos = 0;
+
+    for (int i = 0; i < 6; i++) {
+        pos += sprintf(&str[pos], "%02X", addr->value[i]);
+    }
+
+    return str;
+}
+
+/** Compare two address, return 0 if equal else -1 */
+int ble_addrcmp(ble_addr_t *a1, ble_addr_t *a2)
+{
+    return memcmp(a1->value, a2->value, sizeof(ble_addr_t));
+}
+
+
 
 //
 // ACI HAL events
@@ -435,6 +459,8 @@ and send information from multiple devices in one LE Advertising Report event.
 */
 void hci_le_advertising_report_event(uint8_t num_reports, Advertising_Report_t advertising_report[])
 {
+    char devname[255];
+
     TRACE("EVENT --> hci_le_advertising_report_event   nreports: %d", num_reports);
     for (int i = 0; i < num_reports; i++)
     {
@@ -452,9 +478,22 @@ void hci_le_advertising_report_event(uint8_t num_reports, Advertising_Report_t a
         }
         TRACE_PRINTF("]\n");
 
+        *devname = '\0';
+
+        if (advertising_report[i].Length_Data > 0)
+        {
+            switch(advertising_report[i].Data[1])
+            {
+                case BLE_ADVER_TYPE_SHORTLEN_NAME:
+                case BLE_ADVER_TYPE_COMPLETE_NAME:
+                    strncpy(devname, &advertising_report[i].Data[2], advertising_report[i].Data[0]-1);
+                    break;
+            }
+        }
+
         if (events != NULL && events->scan_found_device != NULL)
         {
-            events->scan_found_device((ble_addr_t *)&advertising_report[i].Address, advertising_report[i].RSSI, advertising_report[i].Data, advertising_report[i].Length_Data);
+            events->scan_found_device((ble_addr_t *)&advertising_report[i].Address, devname, advertising_report[i].RSSI, advertising_report[i].Data, advertising_report[i].Length_Data);
         }
     }
 }

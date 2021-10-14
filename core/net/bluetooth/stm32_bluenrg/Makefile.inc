@@ -1,6 +1,6 @@
 
 CFLAGS += -DBLUENRG2_DEVICE 
-CFLAGS += -DDEBUG -DHCI_LOG_ON
+CFLAGS += -DDEBUG 
 
 MODULES += core/net/bluetooth/stm32_bluenrg
 MODULES += core/net/bluetooth/stm32_bluenrg/hal/inc
