@@ -61,7 +61,22 @@ typedef struct sFskSettings
 extern tLoRaSettings LoRaSettings;
 extern tFskSettings FskSettings;
 
+
+/** Initialize radio */
 int sx1272_dvb_init(void);
+
+/** 
+ * Read received packet
+ * @param buf receive buffer
+ * @param bufsize receive bufer size
+ * @param received RRSI
+ * @return number of received packet bytes else 0 if not or -1 if any error
+ */
+int sx1272_dvb_receive(uint8_t *buf, int bufsize, uint8_t *rssi);
+
+/** Send radio packet */
+int sx1272_dvb_send(uint8_t *buf, int bufsize);
+
 void sx1272_dvb_test(void);
 
 #endif // __SX12XXEIGER_H__

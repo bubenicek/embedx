@@ -107,6 +107,54 @@ int sx1272_dvb_init(void)
 }
 
 
+/** 
+ * Read received packet
+ * @param buf receive buffer
+ * @param bufsize receive bufer size
+ * @param received RRSI
+ * @return number of received packet bytes else 0 if not or -1 if any error
+ */
+int sx1272_dvb_receive(uint8_t *buf, int bufsize, uint8_t *rssi)
+{
+    uint32_t result;
+    uint16_t rxsize = 0;
+
+    result = radio->Process();
+    switch (result)
+    {
+        case RF_RX_TIMEOUT:
+            TRACE("RF_RX_TIMEOUT");
+            break;
+
+        case RF_RX_DONE:
+        {
+            radio->GetRxPacket(buf, &rxsize);
+            if (rxsize > 0)
+            {
+                //TRACE("RF_RX_DONE -> Received %d bytes  RSSI: %f", rxsize, SX1272LoRaGetPacketRssi());
+                //TRACE_DUMP(buf, rxsize);
+
+                *rssi = abs((int)SX1272LoRaGetPacketRssi());
+
+                return rxsize;
+            }
+        }
+        break;
+
+        default:
+            //TRACE("Radio result: 0x%X", result);
+            break;
+    }
+
+    return rxsize;
+}
+
+/** Send radio packet */
+int sx1272_dvb_send(uint8_t *buf, int bufsize)
+{
+    return -1;
+}
+
 
 #if 0
 void RadioOn(void)
