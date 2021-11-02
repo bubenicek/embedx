@@ -131,8 +131,8 @@ int sx1272_dvb_receive(uint8_t *buf, int bufsize, uint8_t *rssi)
             radio->GetRxPacket(buf, &rxsize);
             if (rxsize > 0)
             {
-                //TRACE("RF_RX_DONE -> Received %d bytes  RSSI: %f", rxsize, SX1272LoRaGetPacketRssi());
-                //TRACE_DUMP(buf, rxsize);
+                TRACE("RF_RX_DONE -> Received %d bytes  RSSI: %f", rxsize, SX1272LoRaGetPacketRssi());
+                TRACE_DUMP(buf, rxsize);
 
                 *rssi = abs((int)SX1272LoRaGetPacketRssi());
 
@@ -141,8 +141,11 @@ int sx1272_dvb_receive(uint8_t *buf, int bufsize, uint8_t *rssi)
         }
         break;
 
+        case RF_TX_DONE:
+            TRACE("RF_TX_DONE");
+            break;
+
         default:
-            //TRACE("Radio result: 0x%X", result);
             break;
     }
 
@@ -152,7 +155,37 @@ int sx1272_dvb_receive(uint8_t *buf, int bufsize, uint8_t *rssi)
 /** Send radio packet */
 int sx1272_dvb_send(uint8_t *buf, int bufsize)
 {
-    return -1;
+    int res = -1;
+    uint32_t result;
+
+    radio->SetTxPacket(buf, bufsize);
+
+    do
+    {
+        result = radio->Process();
+        switch (result)
+        {
+            case RF_TX_TIMEOUT:
+                TRACE("RF_TX_TIMEOUT");
+                break;
+
+            case RF_TX_DONE:
+                TRACE("RF_TX_DONE -> Send %d bytes", bufsize);
+                TRACE_DUMP(buf, bufsize);
+                res = bufsize;
+                break;
+
+            default:
+                osDelay(20);
+                break;
+        }
+        
+    } while(result == RF_BUSY);
+
+    // Start receive
+    radio->StartRx();
+
+    return res;
 }
 
 

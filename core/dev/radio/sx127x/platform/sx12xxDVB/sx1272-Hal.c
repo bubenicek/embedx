@@ -161,7 +161,7 @@ uint8_t SX1272ReadDio5( void )
 
 void SX1272WriteRxTx( uint8_t txEnable )
 {
-    TRACE("TX %s", txEnable ? "ON" : "OFF");
+    //TRACE("TX %s", txEnable ? "ON" : "OFF");
     tx_enable = txEnable;
 }
 

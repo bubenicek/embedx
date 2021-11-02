@@ -291,8 +291,6 @@ void SX1272LoRaSetOpMode( uint8_t opMode )
         SX1272LR->RegOpMode = ( SX1272LR->RegOpMode & RFLR_OPMODE_MASK ) | opMode;
 
         SX1272Write( REG_LR_OPMODE, SX1272LR->RegOpMode );   
-
-        TRACE("Set REG_LR_OPMODE = 0x%X", SX1272LR->RegOpMode);     
     }
 }
 
@@ -392,9 +390,7 @@ uint32_t SX1272LoRaProcess( void )
     case RFLR_STATE_IDLE:
         break;
     case RFLR_STATE_RX_INIT:
-    
-        TRACE("RFLR_STATE_RX_INIT");
-        
+           
         SX1272LoRaSetOpMode( RFLR_OPMODE_STANDBY );
 
         SX1272LR->RegIrqFlagsMask = RFLR_IRQFLAGS_RXTIMEOUT |
@@ -439,8 +435,6 @@ uint32_t SX1272LoRaProcess( void )
             SX1272Write( REG_LR_FIFOADDRPTR, SX1272LR->RegFifoAddrPtr );
             
             SX1272LoRaSetOpMode( RFLR_OPMODE_RECEIVER );
-
-            TRACE("SetOpMode RFLR_OPMODE_RECEIVER");
         }
         
         memset( RFBuffer, 0, ( size_t )RF_BUFFER_SIZE );
@@ -448,8 +442,6 @@ uint32_t SX1272LoRaProcess( void )
         PacketTimeout = LoRaSettings.RxPacketTimeout;
         RxTimeoutTimer = GET_TICK_COUNT( );
         RFLRState = RFLR_STATE_RX_RUNNING;
-
-        SX1227DumpRegisters("RX running");
 
         break;
     case RFLR_STATE_RX_RUNNING:
