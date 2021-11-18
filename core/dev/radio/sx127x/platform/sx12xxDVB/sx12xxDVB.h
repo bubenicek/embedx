@@ -72,7 +72,7 @@ int sx1272_dvb_init(void);
  * @param received RRSI
  * @return number of received packet bytes else 0 if not or -1 if any error
  */
-int sx1272_dvb_receive(uint8_t *buf, int bufsize, uint8_t *rssi);
+int sx1272_dvb_receive(uint8_t *buf, int bufsize, int *rssi);
 
 /** Send radio packet */
 int sx1272_dvb_send(uint8_t *buf, int bufsize);

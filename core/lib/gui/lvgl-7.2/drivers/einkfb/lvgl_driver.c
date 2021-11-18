@@ -89,13 +89,13 @@ static void disp_driver_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_colo
     int width = lv_area_get_width(area);
     int height = lv_area_get_height(area);
     uint32_t size = lv_area_get_size(area);
-    hal_time_t start_tm = hal_time_ms();
+    //hal_time_t start_tm = hal_time_ms();
 
     // Send area to display without immediate refresh
     einkfb_write(LV_DISPLAY_ORIENTATION, area->x1, area->y1, width, height, (uint8_t *)color_map, size);
     //TRACE("DISP write  x:%d  y:%d  w:%d  h:%d  size: %d  %d ms", area->x1, area->y1, width, height, size, (int)(hal_time_ms() - start_tm));
 
-    if (lv_disp_flush_is_last(drv))
+    if (lv_disp_flush_is_last(drv)) 
         einkfb_update();
 
     // Indicate you are ready with the flushing
@@ -115,8 +115,6 @@ static void lvgl_thread(void *arg)
             uint32_t next_time = lv_task_handler();
             task_tmo = hal_time_ms() + next_time;
         }
-
-        einkfb_refresh();
 
         hal_delay_ms(LV_DISP_DEF_REFR_PERIOD);
     }

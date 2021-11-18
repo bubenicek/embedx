@@ -6,23 +6,21 @@
 /** GPS data */
 typedef struct
 {
-   bool valid;
-
-   float latitude;
-   float longitude;
-   float speed;
-   float course;   
-   
    time_t time;
+
+   double latitude;
+   double longitude;
+   double speed;
+   double course;   
 
 } gps_data_t;
 
 
-/** Initialize GPS */
-int gps_init(void);
+typedef void (*gps_receive_data_callback_t)(gps_data_t *data);
 
-/** Get GPS data */
-int gps_get_data(gps_data_t *data);
+
+/** Initialize GPS */
+int gps_init(gps_receive_data_callback_t cb);
 
 // returns distance in meters between two positions, both specified
 // as signed decimal-degrees latitude and longitude. Uses great-circle

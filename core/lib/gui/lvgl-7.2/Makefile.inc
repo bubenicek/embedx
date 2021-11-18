@@ -9,4 +9,5 @@ MODULES += core/lib/gui/lvgl-7.2/src/lv_misc
 MODULES += core/lib/gui/lvgl-7.2/src/lv_objx
 MODULES += core/lib/gui/lvgl-7.2/src/lv_themes
 MODULES += core/lib/gui/lvgl-7.2/src/lv_widgets
+MODULES += core/lib/gui/lvgl-7.2/src/png_decoder
 

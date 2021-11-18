@@ -516,6 +516,7 @@ uint32_t SX1272LoRaProcess( void )
     
         SX1272Read( REG_LR_PKTRSSIVALUE, &SX1272LR->RegPktRssiValue );
     
+    /*
         if( RxPacketSnrEstimate < 0 )
         {
             RxPacketRssiValue = RSSI_OFFSET + ( ( double )SX1272LR->RegPktRssiValue ) + RxPacketSnrEstimate;
@@ -524,6 +525,9 @@ uint32_t SX1272LoRaProcess( void )
         {
             RxPacketRssiValue = RSSI_OFFSET + ( 1.0666 * ( ( double )SX1272LR->RegPktRssiValue ) );
         }
+    */
+
+        RxPacketRssiValue = RSSI_OFFSET + SX1272LR->RegPktRssiValue;
     
         if( LoRaSettings.RxSingleOn == true ) // Rx single mode
         {

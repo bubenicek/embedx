@@ -114,7 +114,7 @@ int sx1272_dvb_init(void)
  * @param received RRSI
  * @return number of received packet bytes else 0 if not or -1 if any error
  */
-int sx1272_dvb_receive(uint8_t *buf, int bufsize, uint8_t *rssi)
+int sx1272_dvb_receive(uint8_t *buf, int bufsize, int *rssi)
 {
     uint32_t result;
     uint16_t rxsize = 0;
@@ -134,7 +134,7 @@ int sx1272_dvb_receive(uint8_t *buf, int bufsize, uint8_t *rssi)
                 TRACE("RF_RX_DONE -> Received %d bytes  RSSI: %f", rxsize, SX1272LoRaGetPacketRssi());
                 TRACE_DUMP(buf, rxsize);
 
-                *rssi = abs((int)SX1272LoRaGetPacketRssi());
+                *rssi = SX1272LoRaGetPacketRssi();
 
                 return rxsize;
             }

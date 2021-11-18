@@ -15,6 +15,8 @@
 
 TRACE_TAG(einkfb);
 
+#define CFG_EINKFB_REFRESH_CYCLES   5
+
 #define PIXEL_WRITE 0x1 // Zapsat pixel
 #define PIXEL_WIPE 0x2  // Smazat pixel
 #define PIXEL_LEAVE 0x0 // Nechat pixel beze zmeny
@@ -25,41 +27,29 @@ TRACE_TAG(einkfb);
 // Prototypes:
 void einkfb_test(void);
 
-typedef struct
-{
-   int x;
-   int y;
-   int w;
-   int h;
-   const uint8_t *buf;
-   int bufsize;
-
-} eink_ioctl_draw_t;
-
 #define EINK_IOCTL_UPDATE _IO('A', 0)
-#define EINK_IOCTL_DRAW _IOR('A', 1, eink_ioctl_draw_t *)
-#define EINK_IOCTL_STATUS _IOR('A', 2, int)
+#define EINK_IOCTL_POWERDOWN _IO('A', 1)
 
 /** Simple frame buffer info struct */
 typedef struct fb_info
 {
-   int fb;
-   int display_size;
-   uint8_t *ptr;
+    int fb;
+    int display_size;
+    uint8_t *ptr;
 
-   struct
-   {
-      int line_length;
+    struct
+    {
+        int line_length;
 
-   } fix;
+    } fix;
 
-   struct
-   {
-      int bits_per_pixel;
-      int yres;
-      int xres;
+    struct
+    {
+        int bits_per_pixel;
+        int yres;
+        int xres;
 
-   } var;
+    } var;
 
 } fbinfo;
 
@@ -68,131 +58,144 @@ static struct fb_info fb_info;
 /** Initialize framebuffer driver */
 int einkfb_init(const char *dev)
 {
-   memset(&fb_info, 0, sizeof(fb_info));
-   fb_info.fb = -1;
+    memset(&fb_info, 0, sizeof(fb_info));
+    fb_info.fb = -1;
 
-   if ((fb_info.fb = open(dev, O_RDWR)) < 0)
-   {
-      TRACE_ERROR("Can not open eink fb device '%s'", dev);
-      throw_exception(fail);
-   }
+    if ((fb_info.fb = open(dev, O_RDWR)) < 0)
+    {
+        TRACE_ERROR("Can not open eink fb device '%s'", dev);
+        throw_exception(fail);
+    }
 
-   fb_info.var.xres = CFG_EINKFB_HOR_RES_MAX;
-   fb_info.var.yres = CFG_EINKFB_VER_RES_MAX;
-   fb_info.fix.line_length = fb_info.var.xres / 4;
-   fb_info.var.bits_per_pixel = 2;
-   fb_info.display_size = fb_info.var.xres / 4 * fb_info.var.yres;
+    fb_info.var.xres = CFG_EINKFB_HOR_RES_MAX;
+    fb_info.var.yres = CFG_EINKFB_VER_RES_MAX;
+    fb_info.fix.line_length = fb_info.var.xres / 4;
+    fb_info.var.bits_per_pixel = 2;
+    fb_info.display_size = fb_info.var.xres / 4 * fb_info.var.yres;
 
-   if ((fb_info.ptr = calloc(1, fb_info.display_size)) == NULL)
-   {
-      TRACE_ERROR("Can not alloc fb memory");
-      throw_exception(fail);
-   }
+    if ((fb_info.ptr = calloc(1, fb_info.display_size)) == NULL)
+    {
+        TRACE_ERROR("Can not alloc fb memory");
+        throw_exception(fail);
+    }
 
-   // Clear all display
-   einkfb_clear();
+    // Clear all display
+    einkfb_clear();
 
-   TRACE("fb device '%s' opened", dev);
+    TRACE("fb device '%s' opened", dev);
 
-   return 0;
+    return 0;
 
 fail:
-   if (fb_info.fb != -1)
-   {
-      close(fb_info.fb);
-      fb_info.fb = -1;
-   }
-   return -1;
+    if (fb_info.fb != -1)
+    {
+        close(fb_info.fb);
+        fb_info.fb = -1;
+    }
+    return -1;
 }
 
 /** Write framebuffer to display buffer and draw on eink display */
 int einkfb_update(void)
 {
-   int res;
+    int res;
 
-   do
-   {
-      if ((res = write(fb_info.fb, fb_info.ptr, fb_info.display_size)) < 0)
-      {
-         if (errno != 16)
-         {
-            TRACE_ERROR("Update fb failed");
-            return -1;
-         }
+    // Write buffer
+    do
+    {
+        if ((res = write(fb_info.fb, fb_info.ptr, fb_info.display_size)) < 0)
+        {
+            if (errno != 16)
+            {
+                TRACE_ERROR("Update fb failed");
+                return -1;
+            }
 
-         hal_delay_ms(5);
-      }
+            hal_delay_ms(1);
+        }
 
-   } while (res != fb_info.display_size);
+    } while (res != fb_info.display_size);
 
-   return 0;
-}
+    // Update display
+    for (int ix = 0; ix < CFG_EINKFB_REFRESH_CYCLES; ix++)
+    {
+        do
+        {
+            if ((res = ioctl(fb_info.fb, EINK_IOCTL_UPDATE)) < 0)
+            {
+                if (errno != 16)
+                {
+                    TRACE_ERROR("Refresh failed");
+                    return -1;
+                }
 
-/** Redraw display buffer to eink display */
-int einkfb_refresh(void)
-{
-   int res;
+                hal_delay_ms(1);
+            }
 
-   do
-   {
-      if ((res = ioctl(fb_info.fb, EINK_IOCTL_UPDATE)) < 0)
-      {
-         if (errno != 16)
-         {
-            TRACE_ERROR("Refresh failed");
-            return -1;
-         }
+        } while (res != 0);
+    }
 
-         hal_delay_ms(5);
-      }
+#if 0
+    // Powerdown display
+    do
+    {
+        if ((res = ioctl(fb_info.fb, EINK_IOCTL_POWERDOWN)) < 0)
+        {
+            if (errno != 16)
+            {
+                TRACE_ERROR("Powerdown failed");
+                return -1;
+            }
 
-   } while (res != 0);
+            hal_delay_ms(1);
+        }
 
-   return 0;
+    } while (res != 0);
+#endif
+
+    return 0;
 }
 
 /** Clear display */
 int einkfb_clear(void)
 {
-   int res = 0;
+    int res = 0;
 
-   // Clear
-   memset(fb_info.ptr, 0xAA, fb_info.display_size);
-   res += einkfb_update();
-   hal_delay_ms(250);
+    // Clear
+    memset(fb_info.ptr, 0xAA, fb_info.display_size);
+    res += einkfb_update();
+    hal_delay_ms(250);
 
-   return res;
+    return res;
 }
-
 
 /** Set one pixel in zero display orientation */
 static inline void einkfb_set_pixel(int x, int y, uint8_t state)
 {
-   int byte_index;
-   int bit_pos;
-   int bit_shift;
-   int bit_mask;
+    int byte_index;
+    int bit_pos;
+    int bit_shift;
+    int bit_mask;
 
-   byte_index = fb_info.fix.line_length * y + (x / 4);
-   bit_pos = 0x8 >> (x & 3);
+    byte_index = fb_info.fix.line_length * y + (x / 4);
+    bit_pos = 0x8 >> (x & 3);
 
-   for (bit_shift = 0; bit_shift < 8; bit_shift++)
-   {
-      if (bit_pos & (1 << bit_shift))
-      {
-         bit_shift *= 2;
-         break;
-      }
-   }
+    for (bit_shift = 0; bit_shift < 8; bit_shift++)
+    {
+        if (bit_pos & (1 << bit_shift))
+        {
+            bit_shift *= 2;
+            break;
+        }
+    }
 
-   bit_mask = (3 << bit_shift);
+    bit_mask = (3 << bit_shift);
 
-   if (state)
-      fb_info.ptr[byte_index] = (fb_info.ptr[byte_index] & ~bit_mask) | ((PIXEL_WIPE << bit_shift) & bit_mask);
-   else
-      fb_info.ptr[byte_index] = (fb_info.ptr[byte_index] & ~bit_mask) | ((PIXEL_WRITE << bit_shift) & bit_mask);
+    if (state)
+        fb_info.ptr[byte_index] = (fb_info.ptr[byte_index] & ~bit_mask) | ((PIXEL_WIPE << bit_shift) & bit_mask);
+    else
+        fb_info.ptr[byte_index] = (fb_info.ptr[byte_index] & ~bit_mask) | ((PIXEL_WRITE << bit_shift) & bit_mask);
 }
-
 
 /*
  * Write image buffer at position
@@ -206,80 +209,79 @@ static inline void einkfb_set_pixel(int x, int y, uint8_t state)
  */
 int einkfb_write(einkfb_orientation_t orientation, int x, int y, int width, int height, uint8_t *buf, int bufsize)
 {
-   int row, col;
+    int row, col;
+    lv_color_t *pbuf = (lv_color_t *)buf;
 
-   switch(orientation)
-   {
-      case EINKFB_ORIENTATION_0:
-      {
-         // No rotation
-         for (row = 0; row < height; row++)
-         {
-            for (col = 0; col < width; col++)
-               einkfb_set_pixel(col, row, *buf++);
-         }
-      }
-      break;
+    switch (orientation)
+    {
+    case EINKFB_ORIENTATION_0:
+    {
+        // No rotation
+        for (row = 0; row < height; row++)
+        {
+            for (col = 0; col < width; col++, pbuf++)
+                einkfb_set_pixel(col, row, lv_color_to1(*pbuf));
+        }
+    }
+    break;
 
-      case EINKFB_ORIENTATION_90:
-      {
-         // Rotate 90
-         for (row = 0; row < height; row++)
-         {
-            for (col = 0; col < width; col++)
-               einkfb_set_pixel((CFG_EINKFB_HOR_RES_MAX - height - y) + height - 1 - row, x + col, *buf++);
-         }
-      }
-      break;
+    case EINKFB_ORIENTATION_90:
+    {
+        // Rotate 90
+        for (row = 0; row < height; row++)
+        {
+            for (col = 0; col < width; col++, pbuf++)
+                einkfb_set_pixel((CFG_EINKFB_HOR_RES_MAX - height - y) + height - 1 - row, x + col, lv_color_to1(*pbuf));
+        }
+    }
+    break;
 
-      case EINKFB_ORIENTATION_180:
-      {
-         // Rotate 180
-         for (row = 0; row < height; row++)
-         {
-            for (col = 0; col < width; col++)
-               einkfb_set_pixel(width - 1 - col, height - 1 - row, *buf++);
-         }
-      }
-      break;
+    case EINKFB_ORIENTATION_180:
+    {
+        // Rotate 180
+        for (row = 0; row < height; row++)
+        {
+            for (col = 0; col < width; col++, pbuf++)
+                einkfb_set_pixel(width - 1 - col, height - 1 - row, lv_color_to1(*pbuf));
+        }
+    }
+    break;
 
-      case EINKFB_ORIENTATION_270:
-      {
-         // Rotate 270
-         for (row = 0; row < height; row++)
-         {
-            for (col = 0; col < width; col++)
-               einkfb_set_pixel(y + row, (CFG_EINKFB_VER_RES_MAX - width - x) + width - 1 - col, *buf++);
-         }
-      }
-      break;
+    case EINKFB_ORIENTATION_270:
+    {
+        // Rotate 270
+        for (row = 0; row < height; row++)
+        {
+            for (col = 0; col < width; col++, pbuf++)
+                einkfb_set_pixel(y + row, (CFG_EINKFB_VER_RES_MAX - width - x) + width - 1 - col, lv_color_to1(*pbuf));
+        }
+    }
+    break;
 
-      default:
-         TRACE("Not supported orientation %d", orientation);
-         return -1;
-   }
+    default:
+        TRACE("Not supported orientation %d", orientation);
+        return -1;
+    }
 
-   return 0;
+    return 0;
 }
 
 void einkfb_test(void)
 {
-   int ix, iy;
+    int ix, iy;
 
-   TRACE("Start test");
+    TRACE("Start test");
 
-   for (iy = 0; iy < CFG_EINKFB_VER_RES_MAX; iy++)
-   {
-      for (ix = 0; ix < CFG_EINKFB_HOR_RES_MAX; ix++)
-      {
-         einkfb_set_pixel(ix, iy, 0);
-      }
+    for (iy = 0; iy < CFG_EINKFB_VER_RES_MAX; iy++)
+    {
+        for (ix = 0; ix < CFG_EINKFB_HOR_RES_MAX; ix++)
+        {
+            einkfb_set_pixel(ix, iy, 0);
+        }
 
-      einkfb_update();
-   }
+        einkfb_update();
+    }
 }
-
-
 
 #if 0
 /** Draw monochrome buffer (1Byte per pixel) to framebuffer (2bits per pixel) */
@@ -316,5 +318,3 @@ int einkfb_write(int x, int y, int w, int h, uint8_t *buf, int bufsize)
    return 0;
 }
 #endif
-
-

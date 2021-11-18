@@ -34,9 +34,6 @@ int einkfb_init(const char *dev);
 /** Update data in eink framebuffer and refresh display */
 int einkfb_update(void);
 
-/** Refresh Display */
-int einkfb_refresh(void);
-
 /** Clear display */
 int einkfb_clear(void);
 
