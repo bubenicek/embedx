@@ -63,3 +63,8 @@ int gps_driver_read(char *buf, int bufsize)
    return total;
 }
 
+/** Write data to GPS driver */
+int gps_driver_write(char *buf, int bufsize)
+{
+    return hal_spi_write(GPS_SPI, buf, bufsize);
+}

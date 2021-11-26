@@ -4,6 +4,7 @@
 #include "system.h"
 #include "minmea.h"
 #include "gps.h"
+#include "gpsmon.h"
 #include "gps_driver.h"
 
 TRACE_TAG(gps);
@@ -44,9 +45,17 @@ int gps_init(gps_receive_data_callback_t cb)
 {
     data_cb = cb;
 
+    // Initialize GPS driver
     if (gps_driver_init() != 0)
     {
         TRACE_ERROR("Init GPS driver failed");
+        return -1;
+    }
+
+    // Initialize GPS socket monitor
+    if (gpsmon_init() != 0)
+    {
+        TRACE_ERROR("GPSMON init failed");
         return -1;
     }
 
@@ -153,6 +162,11 @@ static void gps_thread(void *arg)
             continue;
         }
 
+        if (gpsmon_send(line, strlen(line)) > 0)
+        {
+            TRACE_PRINTFF("%s", line);
+        }
+
 #if defined(ENABLE_TRACE_GPS_NMEA) && (ENABLE_TRACE_GPS_NMEA == 1)
         TRACE_PRINTFF("%s", line);
 #endif        
@@ -174,6 +188,7 @@ static void gps_thread(void *arg)
 #else
                 if (minmea_parse_rmc(&rmc_frame, line)) 
                 {
+#if defined(ENABLE_TRACE_GPS_NMEA) && (ENABLE_TRACE_GPS_NMEA == 1)                    
                 TRACE("$xxRMC coordinates: (%d,%d)   speed: %d   %2.2d/%2.2d/%d  %2.2d:%2.2d:%2.2d",
                     rmc_frame.latitude.value,
                     rmc_frame.longitude.value,
@@ -184,7 +199,7 @@ static void gps_thread(void *arg)
                     rmc_frame.time.hours,
                     rmc_frame.time.minutes,
                     rmc_frame.time.seconds);
-
+#endif
                    if (rmc_frame.valid)
                    {
 #if 0
@@ -236,18 +251,21 @@ static void gps_thread(void *arg)
             {
                 if (minmea_parse_gsv(&gsv_frame, line)) 
                 {               
+#if defined(ENABLE_TRACE_GPS_NMEA) && (ENABLE_TRACE_GPS_NMEA == 1)
                     TRACE("$GSV: message %d of %d", gsv_frame.msg_nr, gsv_frame.total_msgs);
                     TRACE("  $GSV: sattelites in view: %d", gsv_frame.total_sats);
-
+#endif
                     if (gsv_frame.total_sats > 0)
                     {
                         for (int i = 0; i < 4; i++)
                         {
+#if defined(ENABLE_TRACE_GPS_NMEA) && (ENABLE_TRACE_GPS_NMEA == 1)                            
                             TRACE("  $GSV: sat nr %d, elevation: %d, azimuth: %d, snr: %d dbm",
                                 gsv_frame.sats[i].nr,
                                 gsv_frame.sats[i].elevation,
                                 gsv_frame.sats[i].azimuth,
                                 gsv_frame.sats[i].snr);
+#endif                                
                         }                  
                     }
                 }

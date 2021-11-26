@@ -18,3 +18,10 @@ int gps_driver_read(char *buf, int bufsize)
    return 0;
 }
 
+/** Write data to GPS driver */
+int gps_driver_write(char *buf, int bufsize)
+{
+    return bufsize;
+}
+
+

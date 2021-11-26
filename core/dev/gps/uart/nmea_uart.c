@@ -23,3 +23,9 @@ int gps_driver_read(char *buf, int bufsize)
    return hal_uart_read(GPS_UART, (unsigned char *)buf, 1, 0);
 }
 
+/** Write data to GPS driver */
+int gps_driver_write(char *buf, int bufsize)
+{
+   return hal_uart_write(GPS_UART, (unsigned char *)buf, bufsize);
+}
+
