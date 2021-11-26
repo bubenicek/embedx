@@ -38,12 +38,12 @@ int hal_net_configure(hal_netif_t hal_netif, const hal_netif_config_t *cfg, hal_
    IP4_ADDR(&netmask, 255,255,255,0);
    IP4_ADDR(&gw, 10,10,10,1);
 
-    uuid = hal_get_board_uuid32();
+   uuid = hal_get_board_uuid32();
 
    // Make unique ethernet address
    netif.hwaddr[0] = SERVICE_PAGE_MAC_ADDR0;
    netif.hwaddr[1] = SERVICE_PAGE_MAC_ADDR1;
-   netif.hwaddr[2] = SERVICE_PAGE_MAC_ADDR2;
+   netif.hwaddr[2] = (uuid >> 24) & 0xFF;
    netif.hwaddr[3] = (uuid >> 16) & 0xFF;
    netif.hwaddr[4] = (uuid >> 8) & 0xFF;
    netif.hwaddr[5] = (uuid & 0xFF);
