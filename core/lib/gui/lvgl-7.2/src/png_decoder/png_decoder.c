@@ -215,17 +215,16 @@ static void convert_color_depth(uint8_t * img, uint32_t px_cnt)
         img[i*3 + 0] = c.full & 0xFF;
     }
 #elif LV_COLOR_DEPTH == 8
-    lv_color32_t * img_argb = (lv_color32_t*)img;
+       lv_color32_t * img_argb = (lv_color32_t*)img;
        lv_color_t c;
        uint32_t i;
        for(i = 0; i < px_cnt; i++) {
            c = LV_COLOR_MAKE(img_argb[i].ch.red, img_argb[i].ch.green, img_argb[i].ch.blue);
-           img[i*3 + 1] = img_argb[i].ch.alpha;
-           img[i*3 + 0] = c.full;
+           img[i*2 + 1] = img_argb[i].ch.alpha;
+           img[i*2 + 0] = c.full;
        }
 #elif LV_COLOR_DEPTH == 1
-    printf("convert_color_depth  px_cnt: %d\n", px_cnt);
-    lv_color32_t * img_argb = (lv_color32_t*)img;
+       lv_color32_t * img_argb = (lv_color32_t*)img;
        lv_color_t c;
        uint32_t i;
        for(i = 0; i < px_cnt; i++) {

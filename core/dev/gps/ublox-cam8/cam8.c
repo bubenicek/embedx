@@ -10,6 +10,7 @@ TRACE_TAG(gps_cam8);
 static uint8_t rxbuf[CFG_GPS_CAM8_RXBUFSIZE];
 static int rxbuf_rindex;
 
+
 /** Initialize GPS driver */
 int gps_driver_init(void)
 {

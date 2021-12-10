@@ -8,6 +8,7 @@ PROJECT_SOURCEFILES += httpd_file.c
 PROJECT_SOURCEFILES += httpd_rest.c
 PROJECT_SOURCEFILES += httpd_raw_socket.c
 PROJECT_SOURCEFILES += httpd_ssl_socket.c
+PROJECT_SOURCEFILES += http_client.c
 
 ## JSON sax parser
 include $(EMBEDX_ROOT)/core/lib/jsmn/Makefile.inc

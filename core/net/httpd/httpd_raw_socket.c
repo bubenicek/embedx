@@ -196,6 +196,8 @@ int httpd_raw_socket_readto(int sd, char *buf, int bufsize, char c)
       buf++;
    }
 
+   buf[total] = '\0';
+
    return total;
 }
 

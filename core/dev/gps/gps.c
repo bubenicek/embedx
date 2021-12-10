@@ -45,17 +45,21 @@ int gps_init(gps_receive_data_callback_t cb)
 {
     data_cb = cb;
 
-    // Initialize GPS driver
-    if (gps_driver_init() != 0)
-    {
-        TRACE_ERROR("Init GPS driver failed");
-        return -1;
-    }
+#if defined(CFG_GPS_ENABLE_UBLOX_MONITOR) && (CFG_GPS_ENABLE_UBLOX_MONITOR == 1)
 
     // Initialize GPS socket monitor
     if (gpsmon_init() != 0)
     {
         TRACE_ERROR("GPSMON init failed");
+        return -1;
+    }
+
+#else
+
+    // Initialize GPS driver
+    if (gps_driver_init() != 0)
+    {
+        TRACE_ERROR("Init GPS driver failed");
         return -1;
     }
 
@@ -65,6 +69,8 @@ int gps_init(gps_receive_data_callback_t cb)
         TRACE_ERROR("Start GPS thread failed");
         return -1;
     }
+
+#endif   // CFG_GPS_ENABLE_UBLOX_MONITOR
 
     TRACE("Init");
 
@@ -160,11 +166,6 @@ static void gps_thread(void *arg)
         {
             TRACE_ERROR("Read gps line failed");
             continue;
-        }
-
-        if (gpsmon_send(line, strlen(line)) > 0)
-        {
-            TRACE_PRINTFF("%s", line);
         }
 
 #if defined(ENABLE_TRACE_GPS_NMEA) && (ENABLE_TRACE_GPS_NMEA == 1)
