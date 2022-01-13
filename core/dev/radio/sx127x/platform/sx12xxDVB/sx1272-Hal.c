@@ -73,6 +73,11 @@ void SX1272InitIo( void )
         return;
     }
 
+    // Set RF capacitor
+    hal_gpio_set(SX1272_SPI_CAP_CS, 0);
+    hal_spi_transmit(SX1272_SPI, SX1272_RF_CAPACITY);
+    hal_gpio_set(SX1272_SPI_CAP_CS, 1);
+
     TRACE("%s", __FUNCTION__);
 }
 

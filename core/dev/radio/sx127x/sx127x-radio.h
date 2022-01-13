@@ -25,11 +25,10 @@
  * SX1272 and SX1276 General parameters definition
  */
 
-#if (RF_COMM_MODE != LORA_MODE)
-//#if (RF_CARRIER_TEST)
-#define LORA              0         // [0: OFF, 1: ON]
+#if defined(RF_CARRIER_TEST) && (RF_CARRIER_TEST == 1)
+  #define LORA              0         // [0: OFF, 1: ON]
 #else
-#define LORA              1         // [0: OFF, 1: ON]
+  #define LORA              1         // [0: OFF, 1: ON]
 #endif
 
 

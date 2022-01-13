@@ -65,7 +65,7 @@ int httpd_raw_socket_connect(const char *host, int port)
    if ((server_host = gethostbyname(host)) == NULL)
    {
     	TRACE_ERROR("gethostbyname '%s'", host);
-      return -1;
+        return -1;
    }
 
    memcpy( (void *) &server_addr.sin_addr, (void *) server_host->h_addr, server_host->h_length);
@@ -81,6 +81,7 @@ int httpd_raw_socket_connect(const char *host, int port)
 
    if (connect(sd, (struct sockaddr *) &server_addr, sizeof( server_addr ) ) < 0)
    {
+      TRACE_ERROR("Connect to %s:%d failed", host, port);
       closesocket(sd);
       return -1;
    }
@@ -196,7 +197,7 @@ int httpd_raw_socket_readto(int sd, char *buf, int bufsize, char c)
       buf++;
    }
 
-   buf[total] = '\0';
+   *buf = '\0';
 
    return total;
 }

@@ -39,19 +39,78 @@ tLoRaSettings LoRaSettings =
 
 
 // Default settings
-tFskSettings FskSettings; 
+tFskSettings FskSettings = 
+{
+    869000000,       // RFFrequency
+    100000,          // Bitrate
+#if defined(RF_CARRIER_TEST) && (RF_CARRIER_TEST == 1)
+    0,               // Fdev
+ #else
+    47000,          // Fdev
+ #endif
+    325000,          // RxBw
+    150000,          // RxBwAfc
+    10,              // Power
+    1,               // CrcOn
+    0,               // AfcOn    
+    16,              // PayloadLength
+};
 
 // Locals:
 static tRadioDriver *radio;
 
+#if defined(RF_CARRIER_TEST) && (RF_CARRIER_TEST == 1)
+void sx1272_dvb_test(void)
+{
+    uint32_t result;
+    uint8_t buf[16];
 
+    TRACE("RF carrier test is running ... (CTRL+c -> terminate)");
+    TRACE("   RFFrequency = %d", FskSettings.RFFrequency);
+    TRACE("   Power = %d", FskSettings.Power);
+    TRACE("   RF capacity: %d", FskSettings.rf_capacity);
+
+    // Set RF capacitor
+    hal_gpio_set(SX1272_SPI_CAP_CS, 0);
+    hal_spi_transmit(SX1272_SPI, FskSettings.rf_capacity);
+    hal_gpio_set(SX1272_SPI_CAP_CS, 1);
+
+    while(1)
+    {
+        memset(buf, 0, sizeof(buf));
+        radio->SetTxPacket(buf, sizeof(buf));
+
+        do
+        {
+            result = radio->Process();
+            switch (result)
+            {
+                case RF_TX_TIMEOUT:
+                    TRACE("RF_TX_TIMEOUT");
+                    break;
+
+                case RF_TX_DONE:
+                    TRACE("RF_TX_DONE -> Send %d bytes", sizeof(buf));
+                    break;
+
+                default:
+                    osDelay(50);
+                    break;
+            }
+            
+        } while(result == RF_BUSY);
+
+        osDelay(500);
+    }
+}
+#else
 void sx1272_dvb_test(void)
 {
     uint32_t result;
     uint8_t buf[255];
     uint16_t bufsize;
 
-    TRACE("RX test is running ...");
+    TRACE("RX test is running ... (CTRL+c -> terminate)");
 
     while (1)
     {
@@ -81,6 +140,7 @@ void sx1272_dvb_test(void)
         osDelay(500);
     }
 }
+#endif
 
 int sx1272_dvb_init(void)
 {
@@ -97,6 +157,10 @@ int sx1272_dvb_init(void)
         TRACE_ERROR("Radio init failed");
         return -1;
     }
+
+#if defined(RF_CARRIER_TEST) && (RF_CARRIER_TEST == 1)
+    sx1272_dvb_test();
+#endif
     
     // Start receive
     radio->StartRx();
@@ -187,126 +251,3 @@ int sx1272_dvb_send(uint8_t *buf, int bufsize)
 
     return res;
 }
-
-
-#if 0
-void RadioOn(void)
-{
-  uint8_t i, *ptr;
-  uint32_t result;
-
-  result = Radio->Process();
-  switch (result)
-  {
-  case RF_RX_TIMEOUT:
-    break;
-
-  case RF_RX_DONE:
-    Radio->GetRxPacket(&Buffer[0], (uint16_t *)&BufferSize);
-    if (BufferSize > 0)
-    {
-      //         LedSet(LED_3, 1);   // Rx Done
-      Set_LED_End_Time(50);
-#if (HW_PLATFORM_MODE != SCUBA_DIVER_MODE)
-      {
-        uint16_t sts;
-
-        calc_aes_sign(&Buffer[0], &Buffer[BufferSize], BufferSize - 2);
-        if (!memcmp(&Buffer[BufferSize - 2], &Buffer[BufferSize], 2))
-        {
-          //           sts = ctrl_aes_sign(&Buffer[0], 12, &Buffer[14]);
-          Check_Scuba_IDE(&Buffer[0]);
-          USB_Send_Nav_Msg(&Buffer[0], SCUBA_DIVER_MODE);
-          Buffer[0] = BASE_STATION_MODE;
-          BufferSize = 9;
-          LedSet(LED_RED, 1);
-          Radio->SetTxPacket(Buffer, BufferSize);
-        }
-      }
-#endif
-#if (HW_PLATFORM_MODE == SCUBA_DIVER_MODE)
-      {
-        //            SX12xx_SetPower(PWR_OFF);
-        if ((BufferSize == LoRaSettings.PayloadLength))
-        {
-          if (Wait_RF_Ack)
-          {
-            if ((Buffer[0] == BASE_STATION_MODE) && !memcmp(&Buffer[1], &RF_SendBuff[1], BufferSize - 1))
-            {
-#if ((PCB_VERSION == PCB_VERSION_2V1M) || (PCB_VERSION == PCB_VERSION_3V1F) || (PCB_VERSION == PCB_VERSION_4V1A))
-              Base_RSSI = SX1272LR->RegPktRssiValue;
-              SX1272LoRaSetOpMode(RFLR_OPMODE_SLEEP);
-#endif
-              if (radio_ack < 10)
-                //            if (radio_ack<3)
-                radio_ack++;
-              Wait_RF_Ack = 0;
-              LedSet(LED_RED, 1); // Ack
-              delay_ms(5);
-              ALLLedSet(0x00);
-            }
-          }
-        }
-      }
-#endif
-    }
-    break;
-  case RF_TX_DONE:
-    LedSet(LED_RED, 0);
-    GPIO_PinModeSet(BUZZ_GPIO_PORT, BUZZ_GPIO_PIN_1, gpioModePushPull, 0);
-    Radio->StartRx();
-#if (HW_PLATFORM_MODE == SCUBA_DIVER_MODE)
-    //         Wait_RF_Ack = 1;
-#endif
-    break;
-  default:
-    if (RF_SendBuffPtr != NULL)
-    {
-#if ((PCB_VERSION == PCB_VERSION_2V1M) || (PCB_VERSION == PCB_VERSION_3V1F) || (PCB_VERSION == PCB_VERSION_4V1A))
-      if (SX1272LoRaIsChannelFree(DVBCfg->Sys.LoRaSettings.RFFrequency, -80, 10))
-#else
-      if (1)
-#endif
-      {
-        BufferSize = RF_SendBuffLen;
-        memcpy(&Buffer[0], RF_SendBuffPtr, BufferSize);
-        RF_SendBuffPtr = NULL;
-        LedSet(LED_RED, 1);
-        Radio->SetTxPacket(Buffer, BufferSize);
-#if (HW_PLATFORM_MODE == SCUBA_DIVER_MODE)
-        Base_RSSI = 0;
-        Wait_RF_Ack = 1;
-#endif
-      }
-      else
-      {
-      }
-    }
-    break;
-  }
-}
-
-
-void Radio_Control( void )
-{
-#if (HW_PLATFORM_MODE != SCUBA_DIVER_MODE)
- RadioOn();
-#endif
-#if (HW_PLATFORM_MODE == SCUBA_DIVER_MODE)
- uint32_t startTick = TickCounter;;
- 
- do 
- {
-  RadioOn();
- } while ( Wait_RF_Ack  && (( TickCounter - startTick ) < (2000/1) ));
- if (Wait_RF_Ack)
- {
-  Wait_RF_Ack = 0;
-  if (radio_ack)
-   radio_ack--;
- }
-// LedSet(LED_RED, 0);
-#endif
-}
-
-#endif

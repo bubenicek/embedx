@@ -55,6 +55,7 @@ typedef struct sFskSettings
     bool CrcOn;
     bool AfcOn;
     uint8_t PayloadLength;
+    uint8_t rf_capacity;
 
 } tFskSettings;
 
