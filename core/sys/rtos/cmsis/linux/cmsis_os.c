@@ -1101,3 +1101,99 @@ unsigned int osMemGetMinSize(void)
     return 0;
 }
 
+
+//====================================
+//==== Asynchronous function call ====
+//====================================
+
+#ifndef CFG_ASYNC_CALL_QUEUE_SIZE
+#define CFG_ASYNC_CALL_QUEUE_SIZE       16
+#endif
+
+// Types:
+typedef struct
+{
+    osAsyncCallFunction func;
+    void *arg;
+
+} async_call_t;
+
+// Prototypes:
+static void async_call_thread(void *arg);
+
+const osMessageQDef(ASYNC_CALL_QUEUE, CFG_ASYNC_CALL_QUEUE_SIZE, uint32_t);
+static const osThreadDef(ASYNC_CALL, async_call_thread, 0, 0, 4096);
+
+static osMessageQId asyncCallQueueId = NULL;
+static osThreadId asyncCallThreadId = 0;
+
+/** Asynchronous function executing */
+osStatus osAsyncCall(osAsyncCallFunction func, void *arg)
+{
+    async_call_t *call;
+
+    if (!asyncCallThreadId)
+    {
+        if ((asyncCallQueueId = osMessageCreate(osMessageQ(ASYNC_CALL_QUEUE), osThreadGetId())) == NULL)
+        {
+            TRACE_ERROR("Create async call queue");
+            throw_exception(fail);
+        }
+
+        // Start monitor thread
+        if ((asyncCallThreadId = osThreadCreate(osThread(ASYNC_CALL), NULL)) == 0)
+        {
+            osMessageDestroy(asyncCallQueueId);
+            asyncCallQueueId = NULL;
+            TRACE_ERROR("Start async call thread failed");
+            throw_exception(fail);
+        }
+
+        TRACE("Async call initialized");
+    }
+
+    if ((call = osMemAlloc(sizeof(async_call_t))) == NULL)
+    {
+        TRACE_ERROR("Alloc async call item queue failed");
+        throw_exception(fail);
+    }
+
+    call->func = func;
+    call->arg = arg;
+
+    if (osMessagePut(asyncCallQueueId, (uintptr_t)call, 1) != osOK)
+    {
+        TRACE_ERROR("Add sync call item into queue failed");
+        throw_exception(fail);
+    }
+
+    return osOK;
+
+fail:
+    return osErrorOS;
+}
+
+static void async_call_thread(void *arg)
+{
+    osEvent evt;
+    async_call_t *call;
+
+    TRACE("Async call thread is running ...");
+
+    while (1)
+    {
+        evt = osMessageGet(asyncCallQueueId, osWaitForever);
+        if (evt.status != osEventMessage)
+        {
+            TRACE_ERROR("Bad async call item");
+            continue;
+        }
+
+        call = evt.value.p; 
+        
+        if (call->func != NULL)       
+            call->func(call->arg);
+        
+        osMemFree(call);
+    }
+}

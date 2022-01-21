@@ -79,8 +79,7 @@ int einkfb_init(const char *dev)
         throw_exception(fail);
     }
 
-    // Clear all display
-    einkfb_clear();
+    osDelay(250);
 
     TRACE("fb device '%s' opened", dev);
 
@@ -93,6 +92,33 @@ fail:
         fb_info.fb = -1;
     }
     return -1;
+}
+
+static void einfb_export_buffer(void)
+{
+    FILE *fw = fopen("intro_img.bin", "w");
+    fwrite(fb_info.ptr, sizeof(char), fb_info.display_size, fw);
+    fclose(fw);
+    printf("Exported %d bytes\n", fb_info.display_size);
+
+    fw = fopen("intro_img.c", "w");
+    fprintf(fw, "static unsigned char intro_img[] = {\n");
+
+    for (int i = 0; i < fb_info.display_size; )
+    {
+        for (int j = 0; j < 32 && i < fb_info.display_size; i++, j++)
+        {
+            fprintf(fw, "0x%2.2X", fb_info.ptr[i]);
+            if (i < fb_info.display_size-1)
+                fprintf(fw, ",");
+        }
+
+        fprintf(fw, "\n");
+    }
+
+    fprintf(fw, "};\n");
+
+    fclose(fw);
 }
 
 /** Write framebuffer to display buffer and draw on eink display */
@@ -116,6 +142,7 @@ int einkfb_update(void)
 
     } while (res != fb_info.display_size);
 
+
     // Update display
     for (int ix = 0; ix < CFG_EINKFB_REFRESH_CYCLES; ix++)
     {
@@ -134,24 +161,6 @@ int einkfb_update(void)
 
         } while (res != 0);
     }
-
-#if 0
-    // Powerdown display
-    do
-    {
-        if ((res = ioctl(fb_info.fb, EINK_IOCTL_POWERDOWN)) < 0)
-        {
-            if (errno != 16)
-            {
-                TRACE_ERROR("Powerdown failed");
-                return -1;
-            }
-
-            hal_delay_ms(1);
-        }
-
-    } while (res != 0);
-#endif
 
     return 0;
 }

@@ -70,7 +70,7 @@ typedef struct
       if (!(EX))                                                                    \
       {                                                                             \
          TRACE_ERROR("(%s) Assert failed at %s:%d", #EX, __FUNCTION__, __LINE__);   \
-         while(1);                                                                  \
+         while(1) {hal_delay_ms(80); hal_led_toggle(LED_ERROR);}                    \
       }                                                                             \
    }
 #endif   // ASSERT

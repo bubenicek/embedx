@@ -23,7 +23,7 @@ int hal_gpio_init(void)
 
    for (ix = 0; ix < NUM_GPIO; ix++)
    {
-      if (gpio_def[ix].mode == SUNXI_GPIO_OUTPUT)
+       if (gpio_def[ix].mode == SUNXI_GPIO_OUTPUT)
       {
          res += sunxi_gpio_set_cfgpin(gpio_def[ix].pin, SUNXI_GPIO_OUTPUT);
          res += sunxi_gpio_output(gpio_def[ix].pin, gpio_def[ix].param);

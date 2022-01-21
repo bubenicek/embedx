@@ -70,10 +70,12 @@ void sx1272_dvb_test(void)
     TRACE("   Power = %d", FskSettings.Power);
     TRACE("   RF capacity: %d", FskSettings.rf_capacity);
 
+#ifdef SX1272_SPI_CAP_CS
     // Set RF capacitor
     hal_gpio_set(SX1272_SPI_CAP_CS, 0);
     hal_spi_transmit(SX1272_SPI, FskSettings.rf_capacity);
     hal_gpio_set(SX1272_SPI_CAP_CS, 1);
+#endif
 
     while(1)
     {

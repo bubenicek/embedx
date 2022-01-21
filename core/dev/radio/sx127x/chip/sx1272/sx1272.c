@@ -62,7 +62,7 @@ int SX1272Init( void )
         return -1;
     }
 
-    SX1227DumpRegisters("After chip reset");
+    //SX1227DumpRegisters("After chip reset");
 
     // REMARK: After radio reset the default modem is FSK
 
@@ -73,7 +73,7 @@ int SX1272Init( void )
     // Initialize FSK modem
     SX1272FskInit( );
 
-    SX1227DumpRegisters("After FSK init");
+    //SX1227DumpRegisters("After FSK init");
 
 #else
 
@@ -82,7 +82,7 @@ int SX1272Init( void )
     // Initialize LoRa modem
     SX1272LoRaInit( );
 
-    SX1227DumpRegisters("After LORA init");
+    //SX1227DumpRegisters("After LORA init");
 
 #endif
 

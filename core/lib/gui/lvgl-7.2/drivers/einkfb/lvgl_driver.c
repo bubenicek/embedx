@@ -72,8 +72,6 @@ int lvgl_driver_init(void)
         return -1;
     }
 
-    osDelay(1000);
-
     TRACE("Driver init");
 
     return 0;
@@ -89,7 +87,7 @@ static void disp_driver_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_colo
     int width = lv_area_get_width(area);
     int height = lv_area_get_height(area);
     uint32_t size = lv_area_get_size(area);
-    //hal_time_t start_tm = hal_time_ms();
+    hal_time_t start_tm = hal_time_ms();
 
     // Send area to display without immediate refresh
     einkfb_write(LV_DISPLAY_ORIENTATION, area->x1, area->y1, width, height, (uint8_t *)color_map, size);

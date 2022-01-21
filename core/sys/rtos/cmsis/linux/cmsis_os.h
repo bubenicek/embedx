@@ -954,6 +954,15 @@ osStatus osRecursiveMutexRelease (osMutexId mutex_id);
 osStatus osRecursiveMutexWait (osMutexId mutex_id, uint32_t millisec);
 
 
+//  ==== Asynchronous function call ====
+
+typedef int (*osAsyncCallFunction)(void *arg);
+
+/** Asynchronous function executing */
+osStatus osAsyncCall(osAsyncCallFunction func, void *arg);
+
+
+
 /*************************** Heap memory functions ************/
 #define osMemAlloc            malloc
 #define osMemRealloc          realloc
