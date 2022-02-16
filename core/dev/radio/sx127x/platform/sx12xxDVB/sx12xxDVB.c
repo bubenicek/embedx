@@ -24,7 +24,7 @@ tLoRaSettings LoRaSettings =
     870000000,        // RFFrequency
     20,               // Power
     0,                // SignalBw [0: 125 kHz, 1: 250 kHz, 2: 500 kHz, 3: Reserved] 
-    11,               // SpreadingFactor [6: 64, 7: 128, 8: 256, 9: 512, 10: 1024, 11: 2048, 12: 4096  chips]
+    8,               // SpreadingFactor [6: 64, 7: 128, 8: 256, 9: 512, 10: 1024, 11: 2048, 12: 4096  chips]
     1,                // ErrorCoding [1: 4/5, 2: 4/6, 3: 4/7, 4: 4/8]
     false,            // CrcOn [0: OFF, 1: ON]
     true,             // ImplicitHeaderOn [0: OFF, 1: ON]

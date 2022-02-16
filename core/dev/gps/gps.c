@@ -164,7 +164,7 @@ static void gps_thread(void *arg)
     {
 		if ((line = gps_readline()) == NULL)
         {
-            TRACE_ERROR("Read gps line failed");
+            //TRACE_ERROR("Read gps line failed");
             continue;
         }
 
