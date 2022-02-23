@@ -62,9 +62,17 @@ typedef struct sFskSettings
 extern tLoRaSettings LoRaSettings;
 extern tFskSettings FskSettings;
 
+typedef struct
+{
+    uint32_t  RFFrequency;
+    int8_t    Power;
+    uint8_t   SpreadingFactor;  
+
+} sx1272_dvb_config_t;
+
 
 /** Initialize radio */
-int sx1272_dvb_init(void);
+int sx1272_dvb_init(sx1272_dvb_config_t *cfg);
 
 /** 
  * Read received packet

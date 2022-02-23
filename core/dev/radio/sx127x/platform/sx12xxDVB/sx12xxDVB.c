@@ -144,8 +144,15 @@ void sx1272_dvb_test(void)
 }
 #endif
 
-int sx1272_dvb_init(void)
+int sx1272_dvb_init(sx1272_dvb_config_t *cfg)
 {
+    if (cfg != NULL)
+    {
+        LoRaSettings.RFFrequency = cfg->RFFrequency;
+        LoRaSettings.SpreadingFactor = cfg->SpreadingFactor;
+        LoRaSettings.Power = cfg->Power;
+    }
+
     // Get driver
     if ((radio = RadioDriverInit()) == NULL)
     {
@@ -167,7 +174,7 @@ int sx1272_dvb_init(void)
     // Start receive
     radio->StartRx();
 
-    TRACE("Init");
+    TRACE("Init frequency: %d   power: %d   spreading_factor: %d", LoRaSettings.RFFrequency, LoRaSettings.SpreadingFactor, LoRaSettings.Power);
 
     return 0;
 }
