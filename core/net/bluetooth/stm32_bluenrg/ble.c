@@ -478,7 +478,7 @@ void hci_le_advertising_report_event(uint8_t num_reports, Advertising_Report_t a
         }
         TRACE_PRINTF("]\n");
 
-        *devname = '\0';
+        memset(devname, 0, sizeof(devname));
 
         if (advertising_report[i].Length_Data > 0)
         {

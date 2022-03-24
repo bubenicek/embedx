@@ -11,6 +11,10 @@
 
 #include <errno.h>
 
+#ifndef CFG_CONFIG_FILENAME
+#define CFG_CONFIG_FILENAME     ""
+#endif
+
 /* Configuration list structures */
 struct cfg_node
 {

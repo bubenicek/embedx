@@ -189,12 +189,10 @@ int httpd_raw_socket_readto(int sd, char *buf, int bufsize, char c)
 
       total++;
 
-      if (*buf == c)
+      if (*buf++ == c)
       {
          break;
       }
-
-      buf++;
    }
 
    *buf = '\0';

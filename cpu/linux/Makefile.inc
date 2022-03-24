@@ -51,7 +51,7 @@ SIZE 		= $(CROSSCOMPILER)size
 #LDFLAGS += -ffunction-sections
 #LDFLAGS += -fdata-sections
 #LDFLAGS += -Wl,-Map=$(PROJECT_TARGET).map,-export-dynamic
-LIBS += -lpthread -lrt
+LIBS += -lpthread -lrt -lm
 
 ### Compilation rules
 makebin:

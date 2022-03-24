@@ -178,7 +178,7 @@ static int httpd_handle_input(httpd_connection_t *s)
     else
     {
         // Not supported request
-        TRACE_ERROR("Not supported request");
+        TRACE_ERROR("Not supported request '%s'", s->buffer);
         return -1;
     }
 
