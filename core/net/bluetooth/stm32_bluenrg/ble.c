@@ -20,11 +20,11 @@ TRACE_TAG(ble);
 
 
 // Types:
-
 typedef enum
 {
     BLE_REQUEST_NONE,
-    BLE_REQUEST_SCAN,
+    BLE_REQUEST_SCAN_START,
+    BLE_REQUEST_SCAN_STOP,
     BLE_REQUEST_CONNECT,
     BLE_REQUEST_DISCONNECT,
     BLE_REQUEST_FIND_ATTRIBUTE,
@@ -48,8 +48,8 @@ typedef struct
 
         union 
         {
-            uint16_t connection_handle;
-            uint16_t attribute_handle;
+            int connection_handle;
+            int attribute_handle;
 
             struct
             {
@@ -72,7 +72,7 @@ static const osThreadDef(BLUENRG_THREAD, bluenrg_thread, 0, 0, 1024);
 // Locals:
 static const ble_events_t *events = NULL;
 static ble_request_t request;
-static uint16_t connection_handle;
+static int connection_handle = -1;
 
 
 /** Init a BlueNRG device */
@@ -92,7 +92,7 @@ static int ble_device_init(void)
     TRACE("hci_reset --> SUCCESS");
 
     // Wait time for reset finished
-    osDelay(1000);
+    osDelay(100);
 
     // Get local version
     uint8_t HCI_Version;
@@ -138,7 +138,6 @@ static int ble_device_init(void)
     }
     TRACE("aci_gatt_init --> SUCCESS");
 
-    //status = aci_gap_init(role,privacy_enabled,device_name_char_len, &service_handle, &dev_name_char_handle, &appearance_char_handle);
     status = aci_gap_init(GAP_CENTRAL_ROLE, 0x00, 0x07, &service_handle, &dev_name_char_handle, &appearance_char_handle);
     if (status != BLE_STATUS_SUCCESS)
     {
@@ -163,7 +162,7 @@ static int ble_device_init(void)
 
 static int request_start(ble_request_type_t type, bool sync)
 {
-    if (request.pending)
+    if (request.pending && request.type != type)
     {
         TRACE_ERROR("BLE request is already pending");
         return -1;
@@ -178,14 +177,20 @@ static int request_start(ble_request_type_t type, bool sync)
         if (osSemaphoreWait(request.sem, CFG_BLE_WAITFOR_TMO) != osOK)
         {
             TRACE_ERROR("Wait for request: %d response failed", type);
-            return -1;
+            throw_exception(fail);
         }
 
         if (request.result.code != 0)
-            return -1;
+            throw_exception(fail);
     }
 
     return 0;
+
+fail:
+    request.pending = false;
+    request.type = BLE_REQUEST_NONE;
+
+    return -1;
 }
 
 static int request_finish(int rescode)
@@ -212,7 +217,7 @@ static void bluenrg_thread(void *arg)
     while (1)
     {
         BTLE_StackTick();
-        osDelay(25);
+        osDelay(20);
     }
 }
 
@@ -269,6 +274,20 @@ int ble_init(const ble_events_t *_events)
     return 0;
 }
 
+int ble_reset(void)
+{
+    // Initialize BLE device
+    if (ble_device_init() != 0)
+    {
+        TRACE_ERROR("BLE device reset failed");
+        return -1;
+    }
+
+    TRACE("BLE device reset");
+
+    return 0;
+}
+
 /** Start BLE scan */
 int ble_start_scan(void)
 {
@@ -278,11 +297,20 @@ int ble_start_scan(void)
     if (status != BLE_STATUS_SUCCESS)
     {
         TRACE_ERROR("Start BLE scan failed, status: 0x%X", status);
-        return -1;
+        throw_exception(fail);
     }
     TRACE("aci_gap_start_general_discovery_proc --> SUCCESS");    
 
-    return request_start(BLE_REQUEST_SCAN, false);
+    if (request_start(BLE_REQUEST_SCAN_START, false))
+    {
+        TRACE_ERROR("Start scan failed");
+        throw_exception(fail);
+    }
+
+    return 0;
+
+fail:
+    return -1;
 }
 
 /** Stop BLE scan */
@@ -290,15 +318,28 @@ int ble_stop_scan(void)
 {
     uint8_t status;
 
+    // Finish scan start request
+    if (request.pending && request.type == BLE_REQUEST_SCAN_START)
+        request_finish(0);
+
     status = aci_gap_terminate_gap_proc(0x02);
     if (status != BLE_STATUS_SUCCESS)
     {
         TRACE_ERROR("Stop BLE scan failed, status: 0x%X", status);
-        return -1;
+        throw_exception(fail);
     }
     TRACE("aci_gap_terminate_gap_proc --> SUCCESS");
 
+    if (request_start(BLE_REQUEST_SCAN_STOP, true) != 0)
+    {
+        TRACE_ERROR("Stop scan failed");
+        throw_exception(fail);
+    }
+
     return 0;
+
+fail:
+    return -1;
 }
 
 /** Connect BLE device */
@@ -306,12 +347,12 @@ int ble_connect(ble_addr_t *addr)
 {
     uint8_t status;
 
-    //status = aci_gap_create_connection(le_scan_interval,le_scan_window,peer_address_type,peer_address,own_address_type,conn_interval_min,conn_interval_max,conn_latency,supervision_timeout,minimum_ce_length,maximum_ce_length);
-    status = aci_gap_create_connection(0x4000, 0x4000, 0x01, addr->value, 0x00, 0x0006, 0x0028, 0x0000, 0x03E8, 0x0000, 0x03E8);
+    // Create a connection with params: le_scan_interval,le_scan_window,peer_address_type,peer_address,own_address_type,conn_interval_min,conn_interval_max,conn_latency,supervision_timeout,minimum_ce_length,maximum_ce_length);
+    status = aci_gap_create_connection(0x4000, 0x4000, addr->type, addr->value, PUBLIC_ADDR, 0x40, 0x40, 0x0, 0x60, 0x2000, 0x2000);
     if (status != BLE_STATUS_SUCCESS)
     {
-        TRACE_ERROR("aci_gap_create_connection() failed:0x%02x\r\n", status);
-        return -1;
+        TRACE_ERROR("aci_gap_create_connection() failed:0x%02x", status);
+        throw_exception(fail);
     }
     TRACE("aci_gap_create_connection --> SUCCESS");
 
@@ -319,19 +360,56 @@ int ble_connect(ble_addr_t *addr)
     if (request_start(BLE_REQUEST_CONNECT, true) != 0)
     {
         TRACE_ERROR("Connect failed");
-        return -1;
+
+        // Terminate connect
+        status = aci_gap_terminate_gap_proc(0x40);
+        if (status != BLE_STATUS_SUCCESS)
+        {
+            TRACE_ERROR("aci_gap_terminate_gap_proc() failed:0x%02x", status);
+        }
+
+        request_start(BLE_REQUEST_CONNECT, true);
+        throw_exception(fail);
     }
 
     connection_handle = request.result.data.connection_handle;
-
     return 0;
+
+fail:
+    return -1;
 }
 
 /** Disconnect BLE device */
 int ble_disconnect(void)
 {
-    // TODO:
+    uint8_t status;
+
+    status = aci_gap_terminate(connection_handle, 0x13);
+    if (status != BLE_STATUS_SUCCESS)
+    {
+        TRACE_ERROR("aci_gap_terminate() failed: 0x%02x  connection_handle: 0x%X", status, connection_handle);
+        throw_exception(fail);       
+    }
+    TRACE("aci_gap_terminate connection_handle: 0x%X --> SUCCESS", connection_handle);
+    
+    // Wait for request finished
+    if (request_start(BLE_REQUEST_DISCONNECT, true) != 0)
+    {
+        TRACE_ERROR("Disconnect failed");
+        throw_exception(fail);
+    }
+
     return 0;
+
+fail:
+    connection_handle = -1;
+    return -1;
+}
+
+/** Check for ble connection */
+bool ble_is_connected(void)
+{
+    return (connection_handle != -1);
 }
 
 /** Find characteristic attribute by UUID */
@@ -351,29 +429,37 @@ int ble_find_attribute(const char *uuid128)
     int status = aci_gatt_disc_char_by_uuid(connection_handle, 0x0001, 0xFFFF, UUID_TYPE_128, &uuid);
     if (status != BLE_STATUS_SUCCESS) {
         TRACE_ERROR("aci_gatt_disc_char_by_uuid failed: 0x%x", status);
-        return -1;
+        throw_exception(fail);
     }
     TRACE("aci_gatt_disc_char_by_uuid --> SUCCESS");
+
+    request.result.data.attribute_handle = -1;
 
     // Wait for response
     if (request_start(BLE_REQUEST_FIND_ATTRIBUTE, true) != 0)
     {
         TRACE_ERROR("Find attribute failed");
-        return -1;
+        throw_exception(fail);
     }
 
     return request.result.data.attribute_handle;
+
+fail:
+    return -1;
 }
 
 /** Read characteristic */
 int ble_read_attribute(int attr_handle, void *buf, int bufsize)
 {
-    int status = aci_gatt_read_char_value(connection_handle, attr_handle + 1);   // Read = +1
+    int status;
+    
+    status = aci_gatt_read_char_value(connection_handle, attr_handle + 1);   // Read = +1
     if (status != BLE_STATUS_SUCCESS) 
     {
         TRACE_ERROR("aci_gatt_read_char_value failed: 0x%x", status);
-        return -1;
+        throw_exception(fail);
     }
+
     TRACE("aci_gatt_read_char_value attr_handle: 0x%x--> SUCCESS", attr_handle);
 
     request.result.data.buf.ptr = buf;
@@ -383,17 +469,40 @@ int ble_read_attribute(int attr_handle, void *buf, int bufsize)
     if (request_start(BLE_REQUEST_READ_ATTRIBUTE, true) != 0)
     {
         TRACE_ERROR("Read attribute failed");
-        return -1;
+        throw_exception(fail);
     }
 
     return request.result.data.buf.size;
+
+fail:
+    return -1;
 }
 
 /** Write characteristic */
 int ble_write_attribute(int attr_handle, const void *buf, int bufsize)
 {
-    // TODO:
+    int status;
+
+    status = aci_gatt_write_char_value(connection_handle, attr_handle+1, bufsize, (uint8_t *)buf);
+    if (status != BLE_STATUS_SUCCESS) 
+    {
+        TRACE_ERROR("aci_gatt_write_char_value failed: 0x%x", status);
+        throw_exception(fail);
+    }
+
+    TRACE("aci_gatt_write_char_value attr_handle: 0x%x--> SUCCESS", attr_handle);
+
+    // Wait for response
+    if (request_start(BLE_REQUEST_WRITE_ATTRIBUTE, true) != 0)
+    {
+        TRACE_ERROR("Write attribute failed");
+        throw_exception(fail);
+    }
+
     return 0;
+
+fail:
+    return -1;
 }
 
 /** Convert address to string */
@@ -412,7 +521,13 @@ const char *ble_addr2str(ble_addr_t *addr)
 /** Compare two address, return 0 if equal else -1 */
 int ble_addrcmp(ble_addr_t *a1, ble_addr_t *a2)
 {
-    return memcmp(a1->value, a2->value, sizeof(ble_addr_t));
+    return memcmp(a1->value, a2->value, sizeof(a1->value));
+}
+
+/** Copy address */
+void ble_addrcpy(ble_addr_t *dest, ble_addr_t *src)
+{
+    memcpy(dest, src, sizeof(ble_addr_t));
 }
 
 
@@ -459,11 +574,14 @@ and send information from multiple devices in one LE Advertising Report event.
 */
 void hci_le_advertising_report_event(uint8_t num_reports, Advertising_Report_t advertising_report[])
 {
-    char devname[255];
+    ble_device_t dev;
 
+#if defined(ENABLE_TRACE_BLE_DISCOVER) && (ENABLE_TRACE_BLE_DISCOVER == 1)
     TRACE("EVENT --> hci_le_advertising_report_event   nreports: %d", num_reports);
+#endif    
     for (int i = 0; i < num_reports; i++)
     {
+#if defined(ENABLE_TRACE_BLE_DISCOVER) && (ENABLE_TRACE_BLE_DISCOVER == 1)
         TRACE_PRINTFF("   Found device addr: ");
         for (int j = 0; j < 6; j++)
         {
@@ -477,8 +595,8 @@ void hci_le_advertising_report_event(uint8_t num_reports, Advertising_Report_t a
             TRACE_PRINTF("%02X ", advertising_report[i].Data[j]);
         }
         TRACE_PRINTF("]\n");
-
-        memset(devname, 0, sizeof(devname));
+#endif
+        memset(dev.name, 0, sizeof(dev.name));
 
         if (advertising_report[i].Length_Data > 0)
         {
@@ -486,14 +604,18 @@ void hci_le_advertising_report_event(uint8_t num_reports, Advertising_Report_t a
             {
                 case BLE_ADVER_TYPE_SHORTLEN_NAME:
                 case BLE_ADVER_TYPE_COMPLETE_NAME:
-                    strncpy(devname, &advertising_report[i].Data[2], advertising_report[i].Data[0]-1);
+                    strncpy(dev.name, &advertising_report[i].Data[2], advertising_report[i].Data[0]-1);
                     break;
             }
         }
 
         if (events != NULL && events->scan_found_device != NULL)
         {
-            events->scan_found_device((ble_addr_t *)&advertising_report[i].Address, devname, advertising_report[i].RSSI, advertising_report[i].Data, advertising_report[i].Length_Data);
+            dev.rssi = advertising_report[i].RSSI;
+            dev.addr.type = advertising_report[i].Address_Type;
+            memcpy(dev.addr.value, advertising_report[i].Address, sizeof(dev.addr.value));
+
+            events->scan_found_device(&dev, advertising_report[i].Data, advertising_report[i].Length_Data);
         }
     }
 }
@@ -508,20 +630,55 @@ void aci_gap_proc_complete_event(uint8_t procedure_code, uint8_t status, uint8_t
 {
     TRACE("EVENT --> aci_gap_proc_complete_event, procedure_code: 0x%x", procedure_code);
 
-    if (request.type == BLE_REQUEST_SCAN && request.pending) 
+    // Discovery procedures
+    if (procedure_code == 0x02)
     {
-        if (events != NULL && events->scan_finished != NULL) 
+        switch(request.type)
         {
-            events->scan_finished();
-        }        
+            case BLE_REQUEST_SCAN_START:
+            {
+                if (events != NULL && events->scan_finished != NULL) 
+                    events->scan_finished();
 
-        request_finish(0);
+                request_finish(0);    
+            }
+            break;
+
+            case BLE_REQUEST_SCAN_STOP:
+                request_finish(0);    
+                break;
+        }
     }
 }
 
 //============================================================================
 // ============================= Connection events ===========================
 //============================================================================
+
+/**
+  * @brief The LE Data Length Change event notifies the Host of a change to either the maximum Payload length or the maximum transmission time of Data Channel PDUs in either direction. The values reported are the maximum that will actually be used on the connection following the change. 
+  * @param Connection_Handle Connection_Handle to be used to identify a connection.
+  * @param MaxTxOctets The maximum number of payload octets in a Link Layer Data Channel PDU that the local Controller will send on this connection (connEffectiveMaxTxOctets defined in [Vol 6] Part B, Section 4.5.10).
+Range 0x001B-0x00FB (0x0000 - 0x001A and 0x00FC - 0xFFFF Reserved for future use)
+  * @param MaxTxTime The maximum time that the local Controller will take to send a Link Layer Data Channel PDU on this connection (connEffectiveMaxTx-Time defined in [Vol 6] Part B, Section 4.5.10).
+Range 0x0148-0x0848 (0x0000 - 0x0127 and 0x0849 - 0xFFFF
+Reserved for future use)
+  * @param MaxRxOctets The maximum number of payload octets in a Link Layer Data Channel PDU that the local controller expects to receive on this connection (connEfectiveMaxRxOctets defined in [Vol 6] Part B, Section 4.5.10).
+Range 0x001B-0x00FB (0x0000 - 0x001A and 0x00FC - 0xFFFF Reserved for future use)
+  * @param MaxRxTime The maximum time that the local Controller expects to take to receive a Link Layer Data Channel PDU on this connection (connEffectiveMax-RxTime defined in [Vol 6] Part B, Section 4.5.10).
+Range 0x0148-0x0848 (0x0000 - 0x0127 and 0x0849 - 0xFFFF Reserved for future use)
+  * @retval None
+*/
+void hci_le_data_length_change_event(uint16_t Connection_Handle,
+                                     uint16_t MaxTxOctets,
+                                     uint16_t MaxTxTime,
+                                     uint16_t MaxRxOctets,
+                                     uint16_t MaxRxTime)
+{
+    TRACE("EVENT --> hci_le_data_length_change_event, connection_handle: 0x%x  MaxTxOctets: %d  MaxRxOctets: %d", connection_handle, MaxTxOctets, MaxRxOctets);
+}                                    
+
+
 
 /**
   * @brief The LE Connection Complete event indicates to both of the Hosts forming the
@@ -583,10 +740,131 @@ void hci_le_connection_complete_event(uint8_t status,
                                       uint8_t Master_Clock_Accuracy)
 {
     TRACE("EVENT --> hci_le_connection_complete_event, Status: 0x%x   connection_handle: 0x%x", status, connection_handle);
-    
     request.result.data.connection_handle = connection_handle;
-    request_finish(0);
+    request_finish(status);
 }
+
+
+/**
+  * @brief The Disconnection Complete event occurs when a connection is terminated.
+The status parameter indicates if the disconnection was successful or not. The
+reason parameter indicates the reason for the disconnection if the disconnection
+was successful. If the disconnection was not successful, the value of the
+reason parameter can be ignored by the Host. For example, this can be the
+case if the Host has issued the Disconnect command and there was a parameter
+error, or the command was not presently allowed, or a Connection_Handle
+that didn't correspond to a connection was given.
+  * @param Status For standard error codes see Bluetooth specification, Vol. 2, part D. For proprietary error code refer to Error codes section
+  * @param Connection_Handle Connection_Handle which was disconnected.
+  * Values:
+  - 0x0000 ... 0x0EFF
+  * @param Reason Reason for disconnection.
+  * Values:
+  - 0x00: Success
+  - 0x01: Unknown HCI Command
+  - 0x02: Unknown Connection Identifier
+  - 0x03: Hardware Failure
+  - 0x04: Page Timeout
+  - 0x05: Authentication Failure
+  - 0x06: PIN or Key Missing
+  - 0x07: Memory Capacity Exceeded
+  - 0x08: Connection Timeout
+  - 0x09: Connection Limit Exceeded
+  - 0x0A: Synchronous Connection Limit to a Device Exceeded
+  - 0x0B: ACL Connection Already Exists
+  - 0x0C: Command Disallowed
+  - 0x0D: Connection Rejected Due To Limited Resources
+  - 0x0E: Connection Rejected Due To Security Reasons
+  - 0x0F: Connection Rejected due to Unacceptable BD_ADDR
+  - 0x10: Connection Accept Timeout Exceeded
+  - 0x11: Unsupported Feature Or Parameter Value
+  - 0x12: Invalid HCI Command Parameters
+  - 0x13: Remote User Terminated Connection
+  - 0x14: Remote Device Terminated Connection due to Low Resources
+  - 0x15: Remote Device Terminated Connection due to Power Off
+  - 0x16: Connection Terminated By Local Host
+  - 0x17: Repeated Attempts
+  - 0x18: Pairing Not Allowed
+  - 0x19: Unknown LMP PDU
+  - 0x1A: Unsupported Remote Feature / Unsupported LMP Feature
+  - 0x1B: SCO Offset Rejected
+  - 0x1C: SCO Interval Rejected
+  - 0x1D: SCO Air Mode Rejected
+  - 0x1E: Invalid LMP Parameters
+  - 0x1F: Unspecified Error
+  - 0x20: Unsupported LMP Parameter Value
+  - 0x21: Role Change Not Allowed
+  - 0x22: LMP Response Timeout / LL Response Timeout
+  - 0x23: LMP Error Transaction Collision
+  - 0x24: LMP PDU Not Allowed
+  - 0x25: Encryption Mode Not Acceptable
+  - 0x26: Link Key cannot be Changed
+  - 0x27: Requested QoS Not Supported
+  - 0x28: Instant Passed
+  - 0x29: Pairing With Unit Key Not Supported
+  - 0x2A: Different Transaction Collision
+  - 0x2C: QoS Unacceptable Parameter
+  - 0x2D: QoS Rejected
+  - 0x2E: Channel Assessment Not Supported
+  - 0x2F: Insufficient Security
+  - 0x30: Parameter Out Of Mandatory Range
+  - 0x32: Role Switch Pending
+  - 0x34: Reserved Slot Violation
+  - 0x35: Role Switch Failed
+  - 0x36: Extended Inquiry Response Too Large
+  - 0x37: Secure Simple Pairing Not Supported by Host
+  - 0x38: Host Busy - Pairing
+  - 0x39: Connection Rejected due to No Suitable Channel Found
+  - 0x3A: Controller Busy
+  - 0x3B: Unacceptable Connection Interval
+  - 0x3C: Directed Advertising Timeout
+  - 0x3D: Connection Terminated Due to MIC Failure
+  - 0x3E: Connection Failed to be Established
+  - 0x3F: MAC of the 802.11 AMP
+  - 0x41: Failed
+  - 0x42: Invalid parameters
+  - 0x43: Busy
+  - 0x44: Invalid length
+  - 0x45: Pending
+  - 0x46: Not allowed
+  - 0x47: GATT error
+  - 0x48: Address not resolved
+  - 0x50: Invalid CID
+  - 0x5A: CSRK not found
+  - 0x5B: IRK not found
+  - 0x5C: Device not found in DB
+  - 0x5D: Security DB full
+  - 0x5E: Device not bonded
+  - 0x5F: Device in blacklist
+  - 0x60: Invalid handle
+  - 0x61: Invalid parameter
+  - 0x62: Out of handles
+  - 0x63: Invalid operation
+  - 0x64: Insufficient resources
+  - 0x65: Insufficient encryption key size
+  - 0x66: Characteristic already exist
+  - 0x82: No valid slot
+  - 0x83: Short window
+  - 0x84: New interval failed
+  - 0x85: Too large interval
+  - 0x86: Slot length failed
+  - 0xFA: Flash read failed
+  - 0xFB: Flash write failed
+  - 0xFC: Flash erase failed
+  * @retval None
+*/
+void hci_disconnection_complete_event(uint8_t Status, uint16_t Connection_Handle, uint8_t Reason)
+{
+    TRACE("EVENT --> hci_disconnection_complete_event, Status: 0x%x   connection_handle: 0x%x  Reason: 0x%X", Status, Connection_Handle, Reason);
+    connection_handle = -1;
+
+    if (request.type != BLE_REQUEST_DISCONNECT)
+        Status = -1;
+    
+    request_finish(Status);
+}
+
+
 
 //=======================================================================================
 // ============================= Read/write properties events ===========================
@@ -594,10 +872,8 @@ void hci_le_connection_complete_event(uint8_t status,
 
 void aci_gatt_disc_read_char_by_uuid_resp_event(uint16_t Connection_Handle, uint16_t Attribute_Handle, uint8_t Attribute_Value_Length, uint8_t Attribute_Value[]) 
 {
-    TRACE("aci_gatt_disc_read_char_by_uuid_resp_event, Attribute_Handle Handle: 0x%x\n", Attribute_Handle);
-
+    TRACE("EVENT --> aci_gatt_disc_read_char_by_uuid_resp_event, Attribute_Handle Handle: 0x%x", Attribute_Handle);
     request.result.data.attribute_handle = Attribute_Handle;
-    request_finish(0);
 }
 
 /**
@@ -620,15 +896,23 @@ void aci_att_read_resp_event(uint16_t connection_handle,
     if (request.result.data.buf.size < event_data_length)
     {
         TRACE_ERROR("Output read buffer overflow");
-        request_finish(-1);
     }
     else
     {
         request.result.data.buf.size = event_data_length;
         memcpy(request.result.data.buf.ptr, attribute_value, event_data_length); 
-        request_finish(0);
     }
-}                             
+}   
+
+/**
+  * @brief This event is generated in response to an Execute Write Request.
+  * @param Connection_Handle Connection handle related to the response
+  * @retval None
+*/
+void aci_att_exec_write_resp_event(uint16_t Connection_Handle)
+{
+    TRACE("EVENT --> aci_att_exec_write_resp_event   Connection_Handle: 0x%X", Connection_Handle);
+}
 
 //============================================================================
 // ============================= Discover events ===========================
@@ -686,7 +970,10 @@ void aci_gatt_error_resp_event(uint16_t Connection_Handle,
                                uint16_t Attribute_Handle,
                                uint8_t Error_Code)
 {
-    //TRACE("EVENT --> aci_gatt_error_resp_event   Error_code: 0x%x  Attribute_Handle: 0x%x", Error_Code, Attribute_Handle);
+    TRACE("EVENT --> aci_gatt_error_resp_event   Error_code: 0x%x  Attribute_Handle: 0x%x", Error_Code, Attribute_Handle);
+    
+    if (request.result.data.attribute_handle == -1)
+        request.result.data.attribute_handle = Attribute_Handle;
 }                               
 
 
@@ -791,6 +1078,8 @@ successfully.
 */
 void aci_gatt_proc_complete_event(uint16_t Connection_Handle, uint8_t Error_Code)
 {
-    TRACE("EVENT --> aci_gatt_proc_complete_event   Error_code: 0x%x", Error_Code);
+    TRACE("EVENT --> aci_gatt_proc_complete_event   Connection_Handle: 0x%X  Error_code: 0x%x", Connection_Handle, Error_Code);
     request_finish(Error_Code);
 }
+
+

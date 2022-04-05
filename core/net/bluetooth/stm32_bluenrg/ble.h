@@ -3,7 +3,11 @@
 #define __BLE_H
 
 #ifndef CFG_BLE_WAITFOR_TMO
-#define CFG_BLE_WAITFOR_TMO     3000
+#define CFG_BLE_WAITFOR_TMO             3000
+#endif
+
+#ifndef CFG_BLE_NAMELEN
+#define CFG_BLE_NAMELEN                 32
 #endif
 
 #define BLE_ADVER_TYPE_FLAGS            0x01
@@ -14,6 +18,7 @@
 
 typedef struct
 {
+    uint8_t type;
     uint8_t value[6];
 
 } ble_addr_t;
@@ -21,7 +26,16 @@ typedef struct
 
 typedef struct
 {
-    void (*scan_found_device)(ble_addr_t *addr, const char *devname, int rssi, uint8_t *data, int datasize);
+    char name[CFG_BLE_NAMELEN];
+    ble_addr_t addr;
+    int rssi;
+
+} ble_device_t;
+
+
+typedef struct
+{
+    void (*scan_found_device)(ble_device_t *dev, uint8_t *data, int datasize);
     void (*scan_finished)(void);
     void (*error)(int errcode, const char *errmsg);
 
@@ -30,6 +44,9 @@ typedef struct
 
 /** Initialize BLE stack */
 int ble_init(const ble_events_t *events);
+
+/** Reset BLE host */
+int ble_reset(void);
 
 /** Start BLE scan */
 int ble_start_scan(void);
@@ -42,6 +59,9 @@ int ble_connect(ble_addr_t *addr);
 
 /** Disconnect BLE device */
 int ble_disconnect(void);
+
+/** Check for ble connection */
+bool ble_is_connected(void);
 
 /** Find characteristic attribute by UUID */
 int ble_find_attribute(const char *uuid128);
@@ -58,5 +78,7 @@ const char *ble_addr2str(ble_addr_t *addr);
 /** Compare two address, return 0 if equal else -1 */
 int ble_addrcmp(ble_addr_t *a1, ble_addr_t *a2);
 
+/** Copy address */
+void ble_addrcpy(ble_addr_t *dest, ble_addr_t *src);
 
 #endif   // __BLE_H
