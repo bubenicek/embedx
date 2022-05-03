@@ -864,6 +864,41 @@ void hci_disconnection_complete_event(uint8_t Status, uint16_t Connection_Handle
     request_finish(Status);
 }
 
+/**
+  * @brief The event is given by the L2CAP layer when a connection update request is received from
+the slave. The upper layer which receives this event has to respond by sending a
+@ref aci_l2cap_connection_parameter_update_resp command.
+  * @param Connection_Handle Handle of the connection related to this
+L2CAP procedure.
+  * @param Identifier This is the identifier which associate the request to the
+response.
+  * @param L2CAP_Length Length of the L2CAP connection update request.
+  * @param Interval_Min Minimum value for the connection event interval. This shall be less
+than or equal to Conn_Interval_Max.
+Time = N * 1.25 msec.
+  * Values:
+  - 0x0006 (7.50 ms)  ... 0x0C80 (4000.00 ms) 
+  * @param Interval_Max Maximum value for the connection event interval. This shall be
+greater than or equal to Conn_Interval_Min.
+Time = N * 1.25 msec.
+  * Values:
+  - 0x0006 (7.50 ms)  ... 0x0C80 (4000.00 ms) 
+  * @param Slave_Latency Slave latency for the connection in number of connection events.
+  * Values:
+  - 0x0000 ... 0x01F3
+  * @param Timeout_Multiplier Defines connection timeout parameter in the following manner: Timeout Multiplier * 10ms.
+  * @retval None
+*/
+void aci_l2cap_connection_update_req_event(uint16_t Connection_Handle,
+                                           uint8_t Identifier,
+                                           uint16_t L2CAP_Length,
+                                           uint16_t Interval_Min,
+                                           uint16_t Interval_Max,
+                                           uint16_t Slave_Latency,
+                                           uint16_t Timeout_Multiplier)
+{
+    TRACE("EVENT --> aci_l2cap_connection_update_req_event, connection_handle: 0x%X", Connection_Handle);
+}                                           
 
 
 //=======================================================================================

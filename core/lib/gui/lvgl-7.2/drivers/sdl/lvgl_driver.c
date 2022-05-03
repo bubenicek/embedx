@@ -76,6 +76,12 @@ int lvgl_driver_init(void)
     return 0;
 }
 
+int lvgl_driver_deinit(void)
+{
+    return 0;
+}
+
+
 uint32_t lvgl_tick_get(void)
 {
 	return hal_time_ms();

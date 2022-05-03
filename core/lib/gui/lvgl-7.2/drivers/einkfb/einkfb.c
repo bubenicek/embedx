@@ -12,20 +12,21 @@
 
 #include "lvgl.h"
 #include "einkfb.h"
+#include "lib/crc32.h"
+
 
 TRACE_TAG(einkfb);
 
-#define CFG_EINKFB_REFRESH_CYCLES   5
+#define CFG_EINKFB_REFRESH_CYCLES             4
+#define CFG_EINKFB_CLEAR_DISPLAY_TIMEOUT      0
 
-#define PIXEL_WRITE 0x1 // Zapsat pixel
-#define PIXEL_WIPE 0x2  // Smazat pixel
-#define PIXEL_LEAVE 0x0 // Nechat pixel beze zmeny
+
+#define PIXEL_WRITE         0x1   // Zapsat pixel
+#define PIXEL_WIPE          0x2   // Smazat pixel
+#define PIXEL_LEAVE         0x0   // Nechat pixel beze zmeny
 
 #define DEG2RAD(angleInDegrees) ((angleInDegrees)*M_PI / 180.0)
 #define RAD2DEG(angleInRadians) ((angleInRadians)*180.0 / M_PI)
-
-// Prototypes:
-void einkfb_test(void);
 
 #define EINK_IOCTL_UPDATE _IO('A', 0)
 #define EINK_IOCTL_POWERDOWN _IO('A', 1)
@@ -36,6 +37,9 @@ typedef struct fb_info
     int fb;
     int display_size;
     uint8_t *ptr;
+    uint32_t crc;
+
+    uint8_t *ptr2;
 
     struct
     {
@@ -53,7 +57,9 @@ typedef struct fb_info
 
 } fbinfo;
 
+// Locals:
 static struct fb_info fb_info;
+
 
 /** Initialize framebuffer driver */
 int einkfb_init(const char *dev)
@@ -79,7 +85,15 @@ int einkfb_init(const char *dev)
         throw_exception(fail);
     }
 
-    osDelay(250);
+    if ((fb_info.ptr2 = calloc(1, fb_info.display_size)) == NULL)
+    {
+        TRACE_ERROR("Can not alloc fb memory");
+        throw_exception(fail);
+    }
+
+#if CFG_EINKFB_CLEAR_DISPLAY_TIMEOUT == 0
+    einkfb_clear();
+#endif
 
     TRACE("fb device '%s' opened", dev);
 
@@ -94,37 +108,20 @@ fail:
     return -1;
 }
 
-static void einfb_export_buffer(void)
-{
-    FILE *fw = fopen("intro_img.bin", "w");
-    fwrite(fb_info.ptr, sizeof(char), fb_info.display_size, fw);
-    fclose(fw);
-    printf("Exported %d bytes\n", fb_info.display_size);
-
-    fw = fopen("intro_img.c", "w");
-    fprintf(fw, "static unsigned char intro_img[] = {\n");
-
-    for (int i = 0; i < fb_info.display_size; )
-    {
-        for (int j = 0; j < 32 && i < fb_info.display_size; i++, j++)
-        {
-            fprintf(fw, "0x%2.2X", fb_info.ptr[i]);
-            if (i < fb_info.display_size-1)
-                fprintf(fw, ",");
-        }
-
-        fprintf(fw, "\n");
-    }
-
-    fprintf(fw, "};\n");
-
-    fclose(fw);
-}
-
 /** Write framebuffer to display buffer and draw on eink display */
 int einkfb_update(void)
 {
     int res;
+    uint32_t crc;
+
+    crc = crc32(0, fb_info.ptr, fb_info.display_size);
+    if (crc == fb_info.crc)
+    {
+        // Screen are the same
+        return 0;
+    }
+
+    fb_info.crc = crc;
 
     // Write buffer
     do
@@ -162,20 +159,9 @@ int einkfb_update(void)
         } while (res != 0);
     }
 
+    TRACE("%s", __FUNCTION__);
+
     return 0;
-}
-
-/** Clear display */
-int einkfb_clear(void)
-{
-    int res = 0;
-
-    // Clear
-    memset(fb_info.ptr, 0xAA, fb_info.display_size);
-    res += einkfb_update();
-    hal_delay_ms(250);
-
-    return res;
 }
 
 /** Set one pixel in zero display orientation */
@@ -206,6 +192,81 @@ static inline void einkfb_set_pixel(int x, int y, uint8_t state)
         fb_info.ptr[byte_index] = (fb_info.ptr[byte_index] & ~bit_mask) | ((PIXEL_WRITE << bit_shift) & bit_mask);
 }
 
+/** Clear display */
+int einkfb_clear(void)
+{
+    // Black
+    for (int row = 0; row < CFG_EINKFB_VER_RES_MAX; row++)
+    {
+        for (int col = 0; col < CFG_EINKFB_HOR_RES_MAX; col++)
+            einkfb_set_pixel(col, row, 0x00);
+    }
+    einkfb_update();
+
+    return 0;
+}
+
+int einkfb_clear_region(einkfb_orientation_t orientation, int x, int y, int width, int height)
+{
+    int row, col;
+
+    switch (orientation)
+    {
+        case EINKFB_ORIENTATION_0:
+        {        
+            // No rotation
+            for (row = 0; row < height; row++)
+            {
+            //    for (col = 0; col < width; col++, pbuf++)
+            //        einkfb_set_pixel(col, row, lv_color_to1(*pbuf));
+            }
+        }
+        break;
+
+        case EINKFB_ORIENTATION_90:
+        {
+            // Rotate 90
+
+            // Black
+            for (row = 0; row < height; row++)
+            {
+                for (col = 0; col < width; col++)
+                    einkfb_set_pixel((CFG_EINKFB_HOR_RES_MAX - height - y) + height - 1 - row, x + col, 0x00);
+            }
+            einkfb_update();
+        }
+        break;
+
+        case EINKFB_ORIENTATION_180:
+        {
+            // Rotate 180
+            for (row = 0; row < height; row++)
+            {
+            //    for (col = 0; col < width; col++, pbuf++)
+            //        einkfb_set_pixel(width - 1 - col, height - 1 - row, lv_color_to1(*pbuf));
+            }
+        }
+        break;
+
+        case EINKFB_ORIENTATION_270:
+        {
+            // Rotate 270
+            for (row = 0; row < height; row++)
+            {
+            //    for (col = 0; col < width; col++, pbuf++)
+            //        einkfb_set_pixel(y + row, (CFG_EINKFB_VER_RES_MAX - width - x) + width - 1 - col, lv_color_to1(*pbuf));
+            }
+        }
+        break;
+
+        default:
+            TRACE("Not supported orientation %d", orientation);
+            return -1;
+    }
+
+    return 0;
+}
+
 /*
  * Write image buffer at position
  * 
@@ -221,75 +282,75 @@ int einkfb_write(einkfb_orientation_t orientation, int x, int y, int width, int 
     int row, col;
     lv_color_t *pbuf = (lv_color_t *)buf;
 
+#if CFG_EINKFB_CLEAR_DISPLAY_TIMEOUT > 0
+    static hal_time_t clear_tmo = 0;
+    if (hal_time_ms() >= clear_tmo)
+    {
+     
+        memcpy(fb_info.ptr2, fb_info.ptr, fb_info.display_size);
+        einkfb_clear();
+        memcpy(fb_info.ptr, fb_info.ptr2, fb_info.display_size);
+     
+//        einkfb_clear_region(orientation, x, y, width, height);
+
+        clear_tmo = hal_time_ms() + CFG_EINKFB_CLEAR_DISPLAY_TIMEOUT;
+    }
+#endif    
+
+    TRACE("%s   x:%d  y:%d  w:%d  h:%d", __FUNCTION__, x, y, width, height);
+
     switch (orientation)
     {
-    case EINKFB_ORIENTATION_0:
-    {
-        // No rotation
-        for (row = 0; row < height; row++)
+        case EINKFB_ORIENTATION_0:
         {
-            for (col = 0; col < width; col++, pbuf++)
-                einkfb_set_pixel(col, row, lv_color_to1(*pbuf));
+            // No rotation
+            for (row = 0; row < height; row++)
+            {
+                for (col = 0; col < width; col++, pbuf++)
+                    einkfb_set_pixel(col, row, lv_color_to1(*pbuf));
+            }
         }
-    }
-    break;
+        break;
 
-    case EINKFB_ORIENTATION_90:
-    {
-        // Rotate 90
-        for (row = 0; row < height; row++)
+        case EINKFB_ORIENTATION_90:
         {
-            for (col = 0; col < width; col++, pbuf++)
-                einkfb_set_pixel((CFG_EINKFB_HOR_RES_MAX - height - y) + height - 1 - row, x + col, lv_color_to1(*pbuf));
+            // Rotate 90
+            for (row = 0; row < height; row++)
+            {
+                for (col = 0; col < width; col++, pbuf++)
+                    einkfb_set_pixel((CFG_EINKFB_HOR_RES_MAX - height - y) + height - 1 - row, x + col, lv_color_to1(*pbuf));
+            }
         }
-    }
-    break;
+        break;
 
-    case EINKFB_ORIENTATION_180:
-    {
-        // Rotate 180
-        for (row = 0; row < height; row++)
+        case EINKFB_ORIENTATION_180:
         {
-            for (col = 0; col < width; col++, pbuf++)
-                einkfb_set_pixel(width - 1 - col, height - 1 - row, lv_color_to1(*pbuf));
+            // Rotate 180
+            for (row = 0; row < height; row++)
+            {
+                for (col = 0; col < width; col++, pbuf++)
+                    einkfb_set_pixel(width - 1 - col, height - 1 - row, lv_color_to1(*pbuf));
+            }
         }
-    }
-    break;
+        break;
 
-    case EINKFB_ORIENTATION_270:
-    {
-        // Rotate 270
-        for (row = 0; row < height; row++)
+        case EINKFB_ORIENTATION_270:
         {
-            for (col = 0; col < width; col++, pbuf++)
-                einkfb_set_pixel(y + row, (CFG_EINKFB_VER_RES_MAX - width - x) + width - 1 - col, lv_color_to1(*pbuf));
+            // Rotate 270
+            for (row = 0; row < height; row++)
+            {
+                for (col = 0; col < width; col++, pbuf++)
+                    einkfb_set_pixel(y + row, (CFG_EINKFB_VER_RES_MAX - width - x) + width - 1 - col, lv_color_to1(*pbuf));
+            }
         }
-    }
-    break;
+        break;
 
-    default:
-        TRACE("Not supported orientation %d", orientation);
-        return -1;
+        default:
+            TRACE("Not supported orientation %d", orientation);
+            return -1;
     }
 
     return 0;
-}
-
-void einkfb_test(void)
-{
-    int ix, iy;
-
-    TRACE("Start test");
-
-    for (iy = 0; iy < CFG_EINKFB_VER_RES_MAX; iy++)
-    {
-        for (ix = 0; ix < CFG_EINKFB_HOR_RES_MAX; ix++)
-        {
-            einkfb_set_pixel(ix, iy, 0);
-        }
-
-        einkfb_update();
-    }
 }
 
 #if 0

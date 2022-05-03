@@ -176,17 +176,6 @@ static void gps_thread(void *arg)
         {
 		    case MINMEA_SENTENCE_RMC:
             {
-#if 0
-                gps_data_t data;
-
-                data.latitude = 49.9221292;
-                data.longitude = 14.1986375;
-                data.course = 0;
-                data.time = time(0);
-
-                if (data_cb != NULL)
-                    data_cb(&data);
-#else
                 if (minmea_parse_rmc(&rmc_frame, line)) 
                 {
 #if defined(ENABLE_TRACE_GPS_NMEA) && (ENABLE_TRACE_GPS_NMEA == 1)                    
@@ -203,21 +192,6 @@ static void gps_thread(void *arg)
 #endif
                    if (rmc_frame.valid)
                    {
-#if 0
-                        // Configure RTC time
-                        memset(&tm, 0, sizeof(tm));
-                        tm.tm_sec = rmc_frame.time.seconds;
-                        tm.tm_min = rmc_frame.time.minutes;
-                        tm.tm_hour = rmc_frame.time.hours;
-                        tm.tm_mday = rmc_frame.date.day;
-                        tm.tm_mon = rmc_frame.date.month - 1;
-                        tm.tm_year = rmc_frame.date.year + 2000 - 1900;
-
-                        if (hal_rtc_set_time(mktime(&tm) + (3600 * 2)) != 0)
-                        {
-                            TRACE_ERROR("Set RTC time failed");
-                        }
-#endif
                         struct tm tm;
                         gps_data_t data;
 
@@ -244,7 +218,6 @@ static void gps_thread(void *arg)
                 {
       	            TRACE_ERROR("Parse MINMEA_SENTENCE_RMC failed");
                 }               
-#endif                
             }
 			break;
 

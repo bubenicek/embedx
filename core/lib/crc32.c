@@ -74,16 +74,18 @@ static uint32_t crc_table[256] =
 #define DO8(buf)  DO4(buf); DO4(buf);
 
 /* ========================================================================= */
-uint32_t crc32(uint32_t crc, uint8_t *buf, int len)
+uint32_t crc32(uint32_t crc, void *buf, int len)
 {
+    uint8_t *pbuf = buf;
+
     crc = crc ^ 0xffffffffL;
     while (len >= 8)
     {
-      DO8(buf);
+      DO8(pbuf);
       len -= 8;
     }
     if (len) do {
-      DO1(buf);
+      DO1(pbuf);
     } while (--len);
     return crc ^ 0xffffffffL;
 }

@@ -72,8 +72,16 @@ int lvgl_driver_init(void)
         return -1;
     }
 
+    osDelay(1000);
+
     TRACE("Driver init");
 
+    return 0;
+}
+
+int lvgl_driver_deinit(void)
+{
+    einkfb_clear();
     return 0;
 }
 

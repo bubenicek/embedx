@@ -126,12 +126,14 @@ endif
 ### Verbosity control. Use  make V=1  to get verbose builds.
 ifeq ($(V),1)
   TRACE_CC =
+  TRACE_CXX =
   TRACE_LD =
   TRACE_AR =
   TRACE_AS =
   Q=
 else
   TRACE_CC = @echo "  CC       " $<
+  TRACE_CXX = @echo " CXX      " $<
   TRACE_LD = @echo "  LD       " $@
   TRACE_AR = @echo "  AR       " $@
   TRACE_AS = @echo "  AS       " $<

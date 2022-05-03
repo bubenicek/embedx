@@ -33,6 +33,7 @@ endif
 
 ### Compiler definitions
 CC       = $(CROSSCOMPILER)gcc
+CXX       = $(CROSSCOMPILER)g++
 LD       = $(CROSSCOMPILER)gcc
 AS       = $(CROSSCOMPILER)as
 OBJCOPY  = $(CROSSCOMPILER)objcopy

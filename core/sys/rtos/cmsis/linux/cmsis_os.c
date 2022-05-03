@@ -1164,6 +1164,7 @@ osStatus osAsyncCall(osAsyncCallFunction func, void *arg)
     if (osMessagePut(asyncCallQueueId, (uintptr_t)call, 1) != osOK)
     {
         TRACE_ERROR("Add sync call item into queue failed");
+        osMemFree(call);
         throw_exception(fail);
     }
 

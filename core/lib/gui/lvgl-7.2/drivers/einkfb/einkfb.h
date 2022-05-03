@@ -37,6 +37,9 @@ int einkfb_update(void);
 /** Clear display */
 int einkfb_clear(void);
 
+/** Clear display region */
+int einkfb_clear_region(einkfb_orientation_t orientation, int x, int y, int width, int height);
+
 /** Write buffer to framebuffer */
 int einkfb_write(einkfb_orientation_t orientation, int x, int y, int w, int h, uint8_t *buf, int bufsize);
 

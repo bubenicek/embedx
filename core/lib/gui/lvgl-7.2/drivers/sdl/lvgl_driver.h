@@ -7,5 +7,6 @@
 #define LVGL_DRIVER_H
 
 int lvgl_driver_init(void);
+int lvgl_driver_deinit(void);
 
 #endif /*LVGL_DRIVER_H*/
