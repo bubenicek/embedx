@@ -159,7 +159,7 @@ int einkfb_update(void)
         } while (res != 0);
     }
 
-    TRACE("%s", __FUNCTION__);
+    //TRACE("%s", __FUNCTION__);
 
     return 0;
 }
@@ -297,7 +297,7 @@ int einkfb_write(einkfb_orientation_t orientation, int x, int y, int width, int 
     }
 #endif    
 
-    TRACE("%s   x:%d  y:%d  w:%d  h:%d", __FUNCTION__, x, y, width, height);
+    //TRACE("%s   x:%d  y:%d  w:%d  h:%d", __FUNCTION__, x, y, width, height);
 
     switch (orientation)
     {

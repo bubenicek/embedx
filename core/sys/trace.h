@@ -54,9 +54,9 @@ typedef struct
 
 #if CFG_CMSIS_OS_API
  #include "cmsis_os.h"
- #define TRACE(_format, ...) TRACE_PRINTF("%s %05d %-10.10s     " _format TRACE_NL, trace_timestamp(), osMemGetFreeSize(), trace_tag->name, ## __VA_ARGS__)
- #define TRACE_PRINTFF(_format, ...) TRACE_PRINTF("%s %05d %-10.10s     " _format, trace_timestamp(),  osMemGetFreeSize(), trace_tag->name, ## __VA_ARGS__)
- #define TRACE_ERROR(_format, ...) TRACE_PRINTF("%s %05d %-10.10s *E  " _format "   %s:%d" TRACE_NL, trace_timestamp(), osMemGetFreeSize(), trace_tag->name, ## __VA_ARGS__, __FILE__, __LINE__)
+ #define TRACE(_format, ...) TRACE_PRINTF("%s %-10.10s     " _format TRACE_NL, trace_timestamp(), trace_tag->name, ## __VA_ARGS__)
+ #define TRACE_PRINTFF(_format, ...) TRACE_PRINTF("%s %-10.10s     " _format, trace_timestamp(),  trace_tag->name, ## __VA_ARGS__)
+ #define TRACE_ERROR(_format, ...) TRACE_PRINTF("%s %-10.10s *E  " _format "   %s:%d" TRACE_NL, trace_timestamp(), trace_tag->name, ## __VA_ARGS__, __FILE__, __LINE__)
 #else
  #define TRACE(_format, ...) TRACE_PRINTF(PSTR("%s %-14.14s     " _format TRACE_NL), trace_timestamp(), trace_tag->name, ## __VA_ARGS__)
  #define TRACE_PRINTFF(_format, ...) TRACE_PRINTF(PSTR("%s %-14.14s     " _format), trace_timestamp(), trace_tag->name, ## __VA_ARGS__)

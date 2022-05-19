@@ -13,8 +13,8 @@
 
 // Locals:
 static char membuf[CFG_MEMLOG_BUFSIZE];
-static volatile int membuf_head = 0;
-static volatile int membuf_tail = 0;
+static volatile uint32_t membuf_head = 0;
+static volatile uint32_t membuf_tail = 0;
 
 
 /**
@@ -32,7 +32,7 @@ int memlog_init(void)
 /** Put char to memory log */
 void memlog_putchar(char c)
 {
-   int nxthead;
+   uint32_t nxthead;
 
    nxthead = (membuf_head + 1) & (CFG_MEMLOG_BUFSIZE - 1);
    if (nxthead == membuf_tail)
