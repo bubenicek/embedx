@@ -17,8 +17,8 @@
 
 TRACE_TAG(einkfb);
 
-#define CFG_EINKFB_REFRESH_CYCLES             4
-#define CFG_EINKFB_CLEAR_DISPLAY_TIMEOUT      0
+#define CFG_EINKFB_REFRESH_CYCLES             5
+#define CFG_EINKFB_CLEAR_DISPLAY_TIMEOUT      60000
 
 
 #define PIXEL_WRITE         0x1   // Zapsat pixel

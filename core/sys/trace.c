@@ -10,12 +10,12 @@
  #include <sys/time.h>
 #include "lib/sprintf.h"
 
-#ifndef number_t
-#define number_t long long
+#ifndef CFG_TRACE_SIMPLE_PRINTF
+#define CFG_TRACE_SIMPLE_PRINTF     0               // Use simple printf formating
 #endif
 
-#ifndef TRACE_VPRINTF
-#define TRACE_VPRINTF	trace_vprintf
+#ifndef number_t
+#define number_t long long
 #endif
 
 /* Prototypes */
@@ -42,14 +42,31 @@ int trace_init(void)
    return 0;
 }
 
+inline void trace_putchar(char c)
+{
+   //if (c == '\n')
+   //   hal_console_putchar('\r');
+
+   hal_console_putchar(c);
+
+#if defined (CFG_FSLOG_ENABLED) && (CFG_FSLOG_ENABLED == 1)
+   fslog_putchar(c);
+#endif
+
+#if defined (CFG_MEMLOG_ENABLED) && (CFG_MEMLOG_ENABLED == 1)
+	memlog_putchar(c);
+#endif
+}
+
 /** Formated trace output */
+#if defined (CFG_TRACE_SIMPLE_PRINTF) && (CFG_TRACE_SIMPLE_PRINTF == 1)
 void trace_printf(const char *fmt, ...)
 {
 	va_list args;
 
 #if defined (CFG_CMSIS_OS_API) && (CFG_CMSIS_OS_API  == 1)
 	if (osKernelRunning())
-   	osMutexWait(trace_mutex_id, osWaitForever);
+   	    osMutexWait(trace_mutex_id, osWaitForever);
 #endif
 
 	va_start(args, fmt);
@@ -58,7 +75,7 @@ void trace_printf(const char *fmt, ...)
 
 #if defined (CFG_CMSIS_OS_API) && (CFG_CMSIS_OS_API  == 1)
 	if (osKernelRunning())
-   	osMutexRelease(trace_mutex_id);
+   	    osMutexRelease(trace_mutex_id);
 #endif
 
    hal_console_flush();
@@ -68,6 +85,43 @@ void trace_printf(const char *fmt, ...)
       fslog_rotate();
 #endif
 }
+
+#else
+
+void trace_printf(const char *fmt, ...)
+{
+	va_list args;
+    char buf[255];
+
+#if defined (CFG_CMSIS_OS_API) && (CFG_CMSIS_OS_API  == 1)
+	if (osKernelRunning())
+   	    osMutexWait(trace_mutex_id, osWaitForever);
+#endif
+
+	va_start(args, fmt);
+	vsnprintf(buf, sizeof(buf), fmt, args);
+	va_end(args);
+
+    for (char *pbuf = buf; *pbuf != '\0'; pbuf++)
+    {
+        trace_putchar(*pbuf);
+    }
+
+#if defined (CFG_CMSIS_OS_API) && (CFG_CMSIS_OS_API  == 1)
+	if (osKernelRunning())
+   	    osMutexRelease(trace_mutex_id);
+#endif
+
+   hal_console_flush();
+
+#if defined (CFG_FSLOG_ENABLED) && (CFG_FSLOG_ENABLED == 1)
+   if (fslog_size() >= CFG_FSLOG_ROTATE_FILESIZE)
+      fslog_rotate();
+#endif
+}
+
+#endif  // CFG_TRACE_SIMPLE_PRINTF
+
 
 /** trace current uptime */
 const char *trace_uptime(void)
@@ -143,22 +197,6 @@ void trace_dump(const void *buffer, int buff_len)
         buff_len -= bytes_cur_line;
 
     } while( buff_len );
-}
-
-void trace_putchar(char c)
-{
-   if (c == '\n')
-      hal_console_putchar('\r');
-
-   hal_console_putchar(c);
-
-#if defined (CFG_FSLOG_ENABLED) && (CFG_FSLOG_ENABLED == 1)
-   fslog_putchar(c);
-#endif
-
-#if defined (CFG_MEMLOG_ENABLED) && (CFG_MEMLOG_ENABLED == 1)
-	memlog_putchar(c);
-#endif
 }
 
 static int do_div(number_t *n, unsigned int base)
