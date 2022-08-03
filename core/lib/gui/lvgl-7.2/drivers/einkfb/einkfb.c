@@ -18,7 +18,7 @@
 TRACE_TAG(einkfb);
 
 #define CFG_EINKFB_REFRESH_CYCLES             5
-#define CFG_EINKFB_CLEAR_DISPLAY_TIMEOUT      60000
+#define CFG_EINKFB_CLEAR_DISPLAY_TIMEOUT      0
 
 
 #define PIXEL_WRITE         0x1   // Zapsat pixel
@@ -139,7 +139,6 @@ int einkfb_update(void)
 
     } while (res != fb_info.display_size);
 
-
     // Update display
     for (int ix = 0; ix < CFG_EINKFB_REFRESH_CYCLES; ix++)
     {
@@ -159,7 +158,7 @@ int einkfb_update(void)
         } while (res != 0);
     }
 
-    //TRACE("%s", __FUNCTION__);
+    TRACE("%s", __FUNCTION__);
 
     return 0;
 }
@@ -234,6 +233,14 @@ int einkfb_clear_region(einkfb_orientation_t orientation, int x, int y, int widt
                     einkfb_set_pixel((CFG_EINKFB_HOR_RES_MAX - height - y) + height - 1 - row, x + col, 0x00);
             }
             einkfb_update();
+
+            // White
+            for (row = 0; row < height; row++)
+            {
+                for (col = 0; col < width; col++)
+                    einkfb_set_pixel((CFG_EINKFB_HOR_RES_MAX - height - y) + height - 1 - row, x + col, 0xFF);
+            }
+            einkfb_update();
         }
         break;
 
@@ -285,13 +292,12 @@ int einkfb_write(einkfb_orientation_t orientation, int x, int y, int width, int 
 #if CFG_EINKFB_CLEAR_DISPLAY_TIMEOUT > 0
     static hal_time_t clear_tmo = 0;
     if (hal_time_ms() >= clear_tmo)
-    {
+    {  
+//        memcpy(fb_info.ptr2, fb_info.ptr, fb_info.display_size);
+//        einkfb_clear();
+//        memcpy(fb_info.ptr, fb_info.ptr2, fb_info.display_size);
      
-        memcpy(fb_info.ptr2, fb_info.ptr, fb_info.display_size);
-        einkfb_clear();
-        memcpy(fb_info.ptr, fb_info.ptr2, fb_info.display_size);
-     
-//        einkfb_clear_region(orientation, x, y, width, height);
+        einkfb_clear_region(orientation, x, y, width, height);
 
         clear_tmo = hal_time_ms() + CFG_EINKFB_CLEAR_DISPLAY_TIMEOUT;
     }

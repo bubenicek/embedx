@@ -15,7 +15,7 @@ static int rxbuf_rindex;
 int gps_driver_init(void)
 {
 	// Enable power
- 	hal_gpio_set(GPS_PWR_EN, 0);
+ 	hal_gpio_set(GPS_PWR_EN, 1);
 
 	if (hal_spi_init(GPS_SPI) != 0)
    {

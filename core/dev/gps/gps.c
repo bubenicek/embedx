@@ -213,6 +213,14 @@ static void gps_thread(void *arg)
                         if (data_cb != NULL)
                             data_cb(&data);
                    }
+                   else
+                   {
+                        gps_data_t data;   
+                        memset(&data, 0, sizeof(gps_data_t));
+
+                        if (data_cb != NULL)
+                            data_cb(&data);
+                   }
                 }
                 else 
                 {
